@@ -1,6 +1,6 @@
 {
   "as_of": "2026-07-11T16:44:00Z",
-  "wallet": "<YOUR_PRIVY_SOLANA_WALLET>",
+  "wallet": "<SOLANA_WALLET_ADDRESS>",
   "global": {
     "active_cap_usd": 50.0,
     "active_cap_mode": "adaptive_staged_baseline",
@@ -41,7 +41,18 @@
        "auto_resolve": true,
        "min_days_to_expiry": 1,
        "max_days_to_expiry": 90,
-       "note": "Jupiter Terminal prediction markets. Each market has YES/NO outcome tokens priced 0-1 USDC. Enable when ready to scan for mispriced probabilities."
+       "note": "Jupiter Terminal prediction markets. YES/NO tokens priced 0-1 USDC. Enable when ready to scan for mispriced probabilities."
+     },
+     "market_scanner": {
+       "enabled": false,
+       "min_volume_usd": 5000,
+       "min_liquidity_usd": 1000,
+       "max_age_days": 365,
+       "max_position_pct_nav": 0.02,
+       "top_traded_limit": 50,
+       "cooking_limit": 50,
+       "allowed_tags": ["defi", "utility", "governance"],
+       "note": "Jupiter Terminal scanner: top-traded + cooking feeds. Scans volume, liquidity, price momentum, new listings. Enable when ready."
      },
     "action_on_trigger": "policy_review_then_execute_only_through_guard",
     "verified_wallet_nav_usd": 64.71,

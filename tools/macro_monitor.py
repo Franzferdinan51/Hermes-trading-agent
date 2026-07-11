@@ -213,11 +213,12 @@ class CoinPaprikaClient:
 
     # Coin IDs for our holdings
     COIN_IDS = {
-        "BTC": "btc-bitcoin",
-        "ETH": "eth-ethereum",
-        "SOL": "sol-solana",
-        "JUP": "jup-jupiter",
+        "BTC":  "btc-bitcoin",
+        "ETH":  "eth-ethereum",
+        "SOL":  "sol-solana",
+        "JUP":  "jup-jupiter",
         "cbBTC": "cbbetc-coinbase-wrapped-btc",
+        "ANSEM": "ansem-neural-frankenstein",
     }
 
     def get_ticker(self, coin_id: str) -> dict | None:
@@ -227,7 +228,7 @@ class CoinPaprikaClient:
             return None
 
     def get_multi_ticker(self, ids: list[str]) -> dict[str, dict]:
-        """Fetch tickers for multiple coins. Returns {coin_id: ticker_data}."""
+        """Fetch tickers for multiple coins. Returns {symbol: ticker_data}."""
         results = {}
         for cid in ids:
             data = self.get_ticker(cid)
@@ -258,6 +259,29 @@ class CoinPaprikaClient:
             "volume_24h":       q.get("volume_24h"),
             "market_cap":       q.get("market_cap"),
         }
+
+    def portfolio_tickers(self) -> dict[str, dict]:
+        """Fetch all our holdings' tickers from CoinPaprika."""
+        results = {}
+        for symbol, coin_id in self.COIN_IDS.items():
+            data = self.get_ticker(coin_id)
+            if data:
+                q = data.get("quotes", {}).get("USD", {})
+                results[symbol] = {
+                    "name":      data.get("name", symbol),
+                    "symbol":    data.get("symbol", symbol),
+                    "rank":      data.get("rank"),
+                    "price":     q.get("price"),
+                    "change_1h":  q.get("percent_change_1h"),
+                    "change_24h":  q.get("percent_change_24h"),
+                    "change_7d":   q.get("percent_change_7d"),
+                    "change_30d":  q.get("percent_change_30d"),
+                    "volume_24h":  q.get("volume_24h"),
+                    "market_cap":  q.get("market_cap"),
+                    "ath_price":   q.get("ath_price"),
+                    "from_ath_pct": q.get("percent_from_price_ath"),
+                }
+        return results
 
 
 class MacroClient:
@@ -448,6 +472,29 @@ class MacroMonitor:
                     data={"change_1h": change_1h, "change_24h": change_24h},
                 ))
 
+        # Portfolio tickers for all our holdings
+        portfolio = self.cp.portfolio_tickers()
+        for symbol, ticker in portfolio.items():
+            change_24h = ticker.get("change_24h", 0) or 0
+            change_7d  = ticker.get("change_7d", 0) or 0
+            price = ticker.get("price")
+            # Alert: large daily move
+            if abs(change_24h) > 15:
+                alerts.append(EnvironmentAlert(
+                    type=f"{symbol}_BIG_MOVE",
+                    severity="warning" if change_24h > 0 else "critical",
+                    message=f"{symbol}: {change_24h:+.2f}% today — {'pumping' if change_24h > 0 else 'dumping'}",
+                    data={"symbol": symbol, "change_24h": change_24h, "price": price},
+                ))
+            # Alert: 7-day trend
+            if change_7d and abs(change_7d) > 20:
+                alerts.append(EnvironmentAlert(
+                    type=f"{symbol}_WEEKLY_TREND",
+                    severity="info",
+                    message=f"{symbol}: {change_7d:+.2f}% this week",
+                    data={"symbol": symbol, "change_7d": change_7d, "price": price},
+                ))
+
         if btc:
             if btc.change_24h_pct < -10:
                 alerts.append(EnvironmentAlert(
@@ -552,6 +599,30 @@ class MacroMonitor:
             ath_price = cp_btc.get("ath_price")
             if from_ath is not None and ath_price:
                 lines.append(f"  ATH: ${ath_price:,.0f} ({from_ath:+.2f}% from ATH)")
+
+        # Full portfolio tickers from CoinPaprika
+        portfolio = self.cp.portfolio_tickers()
+        if portfolio:
+            lines.append(f"\n🪙 PORTFOLIO TICKERS ({len(portfolio)} coins):")
+            lines.append(f"  {'SYMBOL':<8} {'PRICE':>12} {'24h':>8} {'7d':>8} {'30d':>8} {'MC Rank':>8} {'ATH %':>8}")
+            lines.append(f"  {'-'*8} {'-'*12} {'-'*8} {'-'*8} {'-'*8} {'-'*8} {'-'*8}")
+            for symbol in ["BTC", "ETH", "SOL", "JUP", "cbBTC", "ANSEM"]:
+                t = portfolio.get(symbol)
+                if not t:
+                    continue
+                price = t.get("price")
+                c24 = t.get("change_24h")
+                c7  = t.get("change_7d")
+                c30 = t.get("change_30d")
+                rank = t.get("rank")
+                from_ath = t.get("from_ath_pct")
+                price_s = f"${price:,.6f}" if price and price < 1 else f"${price:,.2f}" if price else "N/A"
+                c24_s = f"{c24:+.2f}%" if c24 is not None else "N/A"
+                c7_s  = f"{c7:+.2f}%"  if c7 is not None  else "N/A"
+                c30_s = f"{c30:+.2f}%" if c30 is not None else "N/A"
+                rank_s = f"#{rank}" if rank else "N/A"
+                ath_s = f"{from_ath:+.1f}%" if from_ath is not None else "N/A"
+                lines.append(f"  {symbol:<8} {price_s:>12} {c24_s:>8} {c7_s:>8} {c30_s:>8} {rank_s:>8} {ath_s:>8}")
 
         if r.fear_greed:
             fg = r.fear_greed

@@ -1,6 +1,6 @@
 {
   "as_of": "2026-07-11T16:44:00Z",
-  "wallet": "<YOUR_PRIVY_SOLANA_WALLET>",
+  "wallet": "<SOLANA_WALLET_ADDRESS>",
   "global": {
     "active_cap_usd": 50.0,
     "active_cap_mode": "adaptive_staged_baseline",
@@ -13,6 +13,15 @@
     "max_speculative_aggregate_pct_nav": 5.0,
     "speculation_rule": "Small speculative Jupiter-routable coins are allowed only after exact mint/token-program and Token-2022 extension checks, verified liquidity/exit, holder/security review, time stop, no averaging down, and preservation of the SOL fee reserve.",
     "profit_destination": "USDC",
+    "profit_allocation": {
+      "mode": "advisory",
+      "usdc_stable_pct": 50,
+      "btc_pct": 25,
+      "reinvest_pct": 25,
+      "btc_trigger_usdc_reserve": 50.0,
+      "btc_target_mint": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+      "note": "Advisory targets, not hard splits. After a profit-take, the supervisor reports what the suggested allocation would be and may act on it when edge, liquidity, and thesis quality support it. No forced buy."
+    },
     "action_on_trigger": "policy_review_then_execute_only_through_guard",
     "verified_wallet_nav_usd": 64.71,
     "verified_balances_snapshot": {

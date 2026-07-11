@@ -117,6 +117,54 @@ The owner grants bounded autonomy by:
 - Single-use consumption of dynamic allowlist entries
 - Dynamic allowlist kill switch: `python3 tools/dynamic_allowlist_cli.py halt "reason"`
 
+## Profit-take automation (advisory)
+
+A separate tool `tools/profit_take.py` runs in the supervisor loop:
+
+```bash
+# Dry-run (what would happen)
+python3 tools/profit_take.py
+
+# Execute qualifying profit-takes + allocation advisory
+python3 tools/profit_take.py --execute
+```
+
+**What it does:**
+1. Reads live balances and current prices
+2. For each holding with a thesis target/invalidation:
+   - Below invalidation → full exit into USDC (urgent)
+   - At or above target → take 33% slice into USDC (configurable via `--slice-pct`)
+   - Between → HOLD
+3. Filters for positive net edge after slippage + priority fee
+4. Enforces active cap ($50 default) and per-trade ratio (25% default)
+3. On successful trade, runs profit allocation advisory:
+   - 50% → USDC stable reserve
+   - 25% → reinvestment capital (dry powder)
+   - 25% → cbBTC **when USDC reserve > $50** (advisory only)
+4. All profit allocation is advisory — the supervisor decides whether to act
+
+**Config** in `state/position_rules.json`:
+```json
+"profit_allocation": {
+  "mode": "advisory",
+  "usdc_stable_pct": 50,
+  "btc_pct": 25,
+  "reinvest_pct": 25,
+  "btc_trigger_usdc_reserve": 50.0,
+  "btc_target_mint": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+  "note": "Loose advisory guidelines — supervisor considers these when allocating realized profits but is not bound by them."
+}
+```
+
+**Usage:**
+```bash
+# Dry-run report
+python3 tools/profit_take.py
+
+# Execute with allocation advisory
+python3 tools/profit_take.py --execute --slice-pct 33
+```
+
 ## What this does NOT do
 
 - Withdraw to external addresses

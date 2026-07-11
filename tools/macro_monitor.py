@@ -29,6 +29,7 @@ RULES = STATE / "position_rules.json"
 # ─── Free API endpoints ────────────────────────────────────────────────────
 
 COINGECKO_API = "https://api.coingecko.com/api/v3"
+COINPAPRIKA_API = "https://api.coinpaprika.com/v1"
 FRED_API = "https://api.stlouisfed.org/fred"
 ALTERNATIVES_ME = "https://api.alternative.me"
 
@@ -207,6 +208,58 @@ class FearGreedClient:
         return "Extreme Greed"
 
 
+class CoinPaprikaClient:
+    """CoinPaprika free API — no auth, good for multi-timeframe BTC/ETH/SOL data."""
+
+    # Coin IDs for our holdings
+    COIN_IDS = {
+        "BTC": "btc-bitcoin",
+        "ETH": "eth-ethereum",
+        "SOL": "sol-solana",
+        "JUP": "jup-jupiter",
+        "cbBTC": "cbbetc-coinbase-wrapped-btc",
+    }
+
+    def get_ticker(self, coin_id: str) -> dict | None:
+        try:
+            return _http_json(f"{COINPAPRIKA_API}/tickers/{coin_id}")
+        except Exception:
+            return None
+
+    def get_multi_ticker(self, ids: list[str]) -> dict[str, dict]:
+        """Fetch tickers for multiple coins. Returns {coin_id: ticker_data}."""
+        results = {}
+        for cid in ids:
+            data = self.get_ticker(cid)
+            if data:
+                results[cid] = data
+        return results
+
+    def btc_multi_timeframe(self) -> dict:
+        """Get BTC price changes across multiple timeframes."""
+        ticker = self.get_ticker(self.COIN_IDS["BTC"])
+        if not ticker:
+            return {}
+        q = ticker.get("quotes", {}).get("USD", {})
+        return {
+            "price": q.get("price"),
+            "change_15m_pct":  q.get("percent_change_15m"),
+            "change_30m_pct":  q.get("percent_change_30m"),
+            "change_1h_pct":   q.get("percent_change_1h"),
+            "change_6h_pct":    q.get("percent_change_6h"),
+            "change_12h_pct":   q.get("percent_change_12h"),
+            "change_24h_pct":   q.get("percent_change_24h"),
+            "change_7d_pct":    q.get("percent_change_7d"),
+            "change_30d_pct":   q.get("percent_change_30d"),
+            "change_1y_pct":    q.get("percent_change_1y"),
+            "ath_price":        q.get("ath_price"),
+            "ath_date":         q.get("ath_date"),
+            "from_ath_pct":     q.get("percent_from_price_ath"),
+            "volume_24h":       q.get("volume_24h"),
+            "market_cap":       q.get("market_cap"),
+        }
+
+
 class MacroClient:
     """Public macro data — FRED (treasuries, DXY) + Yahoo Finance (S&P 500)."""
 
@@ -329,6 +382,7 @@ class MacroMonitor:
 
     def __init__(self):
         self.cg = CoinGeckoClient()
+        self.cp = CoinPaprikaClient()
         self.fg = FearGreedClient()
         self.macro = MacroClient()
         self.calendar = MacroCalendarClient()
@@ -372,6 +426,28 @@ class MacroMonitor:
         alerts: list[EnvironmentAlert] = []
 
         btc = self.cg.get_btc()
+
+        # CoinPaprika multi-timeframe BTC data
+        cp_btc = self.cp.btc_multi_timeframe()
+        if cp_btc and cp_btc.get("price"):
+            # Alert: BTC ATH proximity
+            from_ath = cp_btc.get("from_ath_pct", 0)
+            if from_ath and from_ath > -5:  # within 5% of ATH
+                alerts.append(EnvironmentAlert(
+                    type="BTC_NEAR_ATH", severity="info",
+                    message=f"BTC {abs(from_ath):.1f}% from ATH — {cp_btc.get('ath_date', '?')} was ${cp_btc.get('ath_price', 0):,.0f}",
+                    data={"from_ath_pct": from_ath, "ath_price": cp_btc.get("ath_price")},
+                ))
+            # Alert: BTC momentum shift — short timeframes diverging from longer
+            change_1h = cp_btc.get("change_1h_pct", 0)
+            change_24h = cp_btc.get("change_24h_pct", 0)
+            if change_1h and change_24h and change_1h > 2 and change_24h < -1:
+                alerts.append(EnvironmentAlert(
+                    type="BTC_MOMENTUM_SHIFT", severity="warning",
+                    message=f"BTC 1h: {change_1h:+.2f}% vs 24h: {change_24h:+.2f}% — short-term reversal signal",
+                    data={"change_1h": change_1h, "change_24h": change_24h},
+                ))
+
         if btc:
             if btc.change_24h_pct < -10:
                 alerts.append(EnvironmentAlert(
@@ -456,6 +532,26 @@ class MacroMonitor:
             b = r.btc
             lines.append(f"\n📈 BTC: ${b.price_usd:,.2f} ({b.change_24h_pct:+.2f}%) | "
                          f"DOM: {b.dominance_pct:.1f}% | ETH/BTC: {b.eth_btc_ratio:.4f}")
+
+        # CoinPaprika multi-timeframe data
+        cp_btc = self.cp.btc_multi_timeframe()
+        if cp_btc and cp_btc.get("price"):
+            p = cp_btc["price"]
+            lines.append(f"\n📊 BTC MULTI-TIMEFRAME:")
+            tf_lines = []
+            for tf, key in [("15m","change_15m_pct"),("30m","change_30m_pct"),
+                              ("1h","change_1h_pct"),("6h","change_6h_pct"),
+                              ("12h","change_12h_pct"),("24h","change_24h_pct"),
+                              ("7d","change_7d_pct"),("30d","change_30d_pct"),("1y","change_1y_pct")]:
+                v = cp_btc.get(key)
+                if v is not None:
+                    tf_lines.append(f"{tf}: {v:+.2f}%")
+            if tf_lines:
+                lines.append("  " + " | ".join(tf_lines))
+            from_ath = cp_btc.get("from_ath_pct")
+            ath_price = cp_btc.get("ath_price")
+            if from_ath is not None and ath_price:
+                lines.append(f"  ATH: ${ath_price:,.0f} ({from_ath:+.2f}% from ATH)")
 
         if r.fear_greed:
             fg = r.fear_greed

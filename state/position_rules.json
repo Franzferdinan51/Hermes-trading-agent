@@ -1,0 +1,129 @@
+{
+  "as_of": "2026-07-11T16:44:00Z",
+  "wallet": "<YOUR_PRIVY_SOLANA_WALLET>",
+  "global": {
+    "active_cap_usd": 50.0,
+    "active_cap_mode": "adaptive_staged_baseline",
+    "active_cap_note": "Raised to $50 staged baseline; latest read-only scans show ~$64.66 NAV after JL-USDC deposit, ~50% SOL concentration, $1.42 USDC dry powder, $9.52 in JL-USDC yield, no positive executable net edge. Cap expanded from $30 to give the supervisor room to act on small-position opportunities without owner intervention.",
+    "max_notional_per_trade_pct": 0.25,
+    "fee_reserve_sol": 0.02,
+    "max_risk_per_trade_pct": 1.0,
+    "max_daily_loss_pct": 2.0,
+    "max_speculative_position_pct_nav": 2.0,
+    "max_speculative_aggregate_pct_nav": 5.0,
+    "speculation_rule": "Small speculative Jupiter-routable coins are allowed only after exact mint/token-program and Token-2022 extension checks, verified liquidity/exit, holder/security review, time stop, no averaging down, and preservation of the SOL fee reserve.",
+    "profit_destination": "USDC",
+    "action_on_trigger": "policy_review_then_execute_only_through_guard",
+    "verified_wallet_nav_usd": 64.71,
+    "verified_balances_snapshot": {
+      "SOL": 0.411193067,
+      "JUP": 53.19543,
+      "USDC": 0.50,
+      "JL-USDC": 9.93,
+      "JupSOL": 0.025072774,
+      "cbBTC": 9.719e-05,
+      "ANSEM": 6.449815
+    },
+    "research_update": "Read-only yield/staking/liquidity diligence 2026-07-11 15:44 UTC: SOL $78.29, JUP $0.209699 (+3.82% 24h, -11.07% 7d), USDC $0.999840, JupSOL $93.55, cbBTC $64,110, jlUSDC $1.051062 (Jupiter Lend API 4.55% total APY / TVL $414.24M). JLP $3.67 (watchlist, no entry). No signing, no broadcast, no funded yield action. The bounded Privy signTransaction + Solana RPC broadcast path has since finalized later allowlisted spot swaps; no signing-schema blocker is active."
+  },
+  "positions": {
+    "JUP": {
+      "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+      "bucket": "long_term",
+      "reference_price_usd": 0.209699,
+      "target_review_usd": 0.24,
+      "invalidation_review_usd": 0.17,
+      "time_horizon": "months, subject to thesis review",
+      "profit_rule": "take partial profit into USDC near target if liquidity and costs remain favorable",
+      "risk_rule": "review immediately below invalidation or on material tokenomics/security change",
+      "staking_allocation": {
+        "earmarked_jup": 0.0,
+        "status": "not_staked_reconciled_to_usdc",
+        "reconciliation_note": "The former 15.140517 JUP earmark was sold to USDC in finalized transaction 2TEHC2AZSDjbM1Yqvp9St7o129Qd1xJCcsq7QUX7yTnAj1dqRCYqAjcDoDmepv8cmc7WjQSYkr7ebzr3ggHdX1Hr and funded the Jupiter Earn supply; it was never governance-staked.",
+        "unstaking_cooldown_days": 0,
+        "reward_type": "none",
+        "liquidity_rule": "All current JUP is liquid; do not stake without a new approved thesis."
+      }
+    },
+    "cbBTC": {
+      "mint": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+      "bucket": "long_term",
+      "reference_price_usd": 64110.0,
+      "target_review_usd": 70000.0,
+      "invalidation_review_usd": 56000.0,
+      "time_horizon": "months, BTC diversification thesis",
+      "profit_rule": "take partial profit into USDC near target if liquidity and costs remain favorable",
+      "risk_rule": "review immediately below invalidation or on custody/bridge/wrapped-asset issue"
+    },
+    "SOL": {
+      "mint": "So11111111111111111111111111111111111111112",
+      "bucket": "stable_reserve",
+      "reference_price_usd": 78.29,
+      "target_review_usd": null,
+      "invalidation_review_usd": null,
+      "time_horizon": "reserve/short-term only",
+      "profit_rule": "do not reduce below 0.02 SOL fee reserve; no trade absent positive net edge after costs",
+      "risk_rule": "review on network incident, sustained high volatility, or balance discrepancy"
+    },
+    "USDC": {
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "bucket": "stable_reserve",
+      "reference_price_usd": 0.99984,
+      "target_review_usd": null,
+      "invalidation_review_usd": 0.995,
+      "time_horizon": "reserve",
+      "profit_rule": "hold as same-chain reserve",
+      "risk_rule": "review on depeg or issuer/liquidity event"
+    },
+    "JupSOL": {
+      "mint": "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v",
+      "bucket": "long_term_staking",
+      "reference_price_usd": 93.55,
+      "target_review_usd": null,
+      "invalidation_review_usd": null,
+      "time_horizon": "months",
+      "profit_rule": "hold; review on depeg/liquidity deterioration",
+      "risk_rule": "review on validator, pool, redemption, or depeg event"
+    },
+    "JL-USDC": {
+      "mint": "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D",
+      "bucket": "long_term_earn",
+      "reference_price_usd": 1.051062,
+      "target_review_usd": null,
+      "invalidation_review_usd": null,
+      "time_horizon": "weeks to months",
+      "profit_rule": "hold while withdrawal liquidity and net APY remain acceptable",
+      "risk_rule": "review on exploit, oracle issue, withdrawal restriction, or USDC depeg"
+    },
+    "ANSEM": {
+      "mint": "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump",
+      "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "bucket": "speculation",
+      "amount": 6.449815,
+      "reference_price_usd": null,
+      "target_review_usd": null,
+      "invalidation_review_usd": null,
+      "time_horizon": "mandatory review before any additional action",
+      "profit_rule": "Do not add or average down; only act after fresh quote, liquidity, and Token-2022 risk review.",
+      "risk_rule": "Treat as isolated speculation; zero additional capital until fresh thesis."
+    }
+  },
+  "last_review": "2026-07-11T16:44:00Z",
+  "verified_balances_snapshot": {
+    "SOL": 0.461193067,
+    "JUP": 53.19543,
+    "USDC": 3.921777,
+    "JL-USDC": 2.968213,
+    "JupSOL": 0.025072774,
+    "cbBTC": 9.719e-05,
+    "ANSEM": 6.449815
+  },
+  "research_update": "Read-only Jupiter/Solana monitor 2026-07-11 16:44 UTC: SOL $77.75 (-0.01% 24h), JUP $0.207932 (+3.51% 24h, fading prior cycle +3.64%), USDC $0.999851, JupSOL $93.21, cbBTC $64,075, JL-USDC $1.051067 (Jupiter Lend API: supplyRate 3.82% + rewardsRate 0.73% = totalRate 4.55%; TVL $414.21M [+0.0045% from $414.19M prior]; withdrawable $55.17M [+0.008%]). Jupiter Lend API schema confirmed changed to top-level JSON array (was {\"tokens\": [...]}); all 7 vaults (jlJupUSD/jlUSDC/jlWSOL/jlUSDT/jlUSDS/jlEURC/jlUSDG) reconciled, total TVL $724.51M. JLP $3.66 (+0.20% 24h, watchlist, no entry). ASR Q2 2026 claim period OPEN through Oct 8 2026 (50M JUP pool); wallet has 53.20 JUP (over 50 JUP threshold) but no DAO vote participation \u2192 not eligible. NAV $64.13 (-$0.22 / -0.34% vs prior cycle $64.35; within noise). All wallet balances match 5 prior cycles. NO ACTION \u2014 no verified positive executable net edge; the bounded Privy executor remains available and policy-gated.",
+  "risk_controls": {
+    "adaptive_active_cap_usd": 30,
+    "fee_reserve_sol": 0.02,
+    "per_trade_loss_pct": 1.0,
+    "daily_realized_loss_pct": 2.0,
+    "arbitrage_min_net_edge_bps": 100
+  }
+}

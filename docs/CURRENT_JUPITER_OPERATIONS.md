@@ -1,0 +1,152 @@
+# Current Jupiter Trading Operations
+
+**Canonical operational status:** 2026-07-11 13:45 EDT  
+**Active scope:** isolated Privy Solana wallet + Jupiter only  
+**Wallet:** `<YOUR_PRIVY_SOLANA_WALLET>`
+
+This document is the current operational source of truth. Older Cosmos/Osmosis and Keplr material remains historical/reference unless the owner explicitly reactivates it.
+
+## 1. Safety and authority boundary
+
+- Autonomous execution is limited to policy-bounded Jupiter spot swaps through `tools/privy_jupiter_executor.py`.
+- The executor defaults to dry-run. Signing and broadcast require `--execute`.
+- Allowlisted mints: SOL, USDC, JUP, cbBTC, and JupSOL are hard-coded in `tools/privy_jupiter_executor.py`.
+- Speculative mints (currently ANSEM) are hard-coded for exit-only.
+- **Permissive dynamic allowlist** is enabled: the supervisor can autonomously add any Jupiter-routable mint to `state/active_allowlist.json` for one trade, with a 6h TTL, a per-mint notional cap, mandatory Token-2022 extension inspection, liquidity evidence, a thesis card, and single-use consumption. See `tools/dynamic_allowlist.py`, `tools/dynamic_allowlist_cli.py`, and `tests/test_dynamic_allowlist.py`. Hard-coded safety rules (approved programs, fee-payer check, Jupiter-router requirement, transaction decoding, simulation) are never relaxed.
+- Hard controls: one-trade filesystem lock, emergency-stop marker, fresh quote, wallet fingerprint, **active cap from `state/position_rules.json` (`active_cap_usd`, hard floor $50)**, per-trade notional ratio from state (`max_notional_per_trade_pct`, hard floor 25%), 1% NAV maximum loss, 2% daily realized-loss limit input, ≤0.5% price impact, ≤100 bps slippage, 0.02 SOL fee reserve, finalized transaction with `err:null`, minimum-output verification, and post-trade reconciliation.
+- Dynamic allowlist controls: per-mint notional cap from the supervisor entry, max 6h TTL by default (24h hard cap), single-use consumption on successful trade, kill switch via `python3 tools/dynamic_allowlist_cli.py halt <reason>`.
+- Prohibited: withdrawals, treasury sweeps, arbitrary contracts, unknown mints/programs, bridges, leverage/perps, wallet-permission changes, and legacy custom signers.
+- Non-spot products such as Earn/Lend/Stake/LP/JLP/predictions/tokenized assets require feature-specific research and risk gates. Current held JL-USDC is monitored; the generic spot executor does not automate deposits or withdrawals.
+- Small speculative coins are allowed in a separate speculation bucket. Default limits are 2% of verified NAV per speculative position and 5% aggregate speculative exposure, further constrained by the 1% NAV maximum-loss rule.
+## 2. Exact asset identity
+
+| Asset | Mint/program note |
+|---|---|
+| SOL | `So11111111111111111111111111111111111111112` |
+| USDC | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` |
+| JUP | `JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN` |
+| cbBTC | `cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij` |
+| JupSOL | `jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v` |
+| JL-USDC receipt | `9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D` |
+| ANSEM | `9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump` — Token-2022; **not JupSOL** |
+
+Every reconciliation must query both classic SPL Token and Token-2022.
+
+## 3. Execution workflow
+
+1. Collect current prices, news, wallet balances, yield, liquidity, and status.
+2. Research jobs are read-only. They may update evidence and Kanban and promote a fully specified candidate to `Ready`; they never sign or broadcast.
+3. Risk manager is read-only and updates adaptive rules.
+4. Supervisor revalidates every Ready card with fresh data.
+5. Run executor without `--execute`:
+
+```bash
+python3 tools/privy_jupiter_executor.py \
+  --wallet <YOUR_PRIVY_SOLANA_WALLET> \
+  --thesis-id <STABLE_THESIS_OR_KANBAN_ID> \
+  --input-mint <EXACT_MINT> \
+  --output-mint <EXACT_MINT> \
+  --amount <RAW_AMOUNT> \
+  --notional-usd <CURRENT_NOTIONAL> \
+  --wallet-value-usd <CURRENT_NAV> \
+  --max-loss-usd <THESIS_MAX_LOSS> \
+  --slippage-bps <APPROVED_BPS>
+```
+
+6. Only if the dry-run and every policy/thesis gate pass, obtain a fresh quote and rerun with `--execute`.
+7. Success requires finalized `err:null`, verified output at or above minimum, fee reserve intact, reconciled balances, ledger append, thesis update, and Kanban transition.
+8. A scheduler `OK`, Privy response, returned signature, or UI change is not proof of a trade.
+
+## 4. Cron architecture
+
+### Collectors
+
+| Job | ID | Schedule | Model |
+|---|---|---|---|
+| Price/market monitor | `360ea3632ee7` | every 2h | MiniMax M2.7 Pro |
+| Portfolio reconciliation/executor health | `2c0fe6ae5f07` | every 2h | MiniMax M2.7 Pro |
+| Yield/staking/liquidity | `4d6410b88412` | every 4h | MiniMax M2.7 Pro |
+| News/market impact | `a91726db6f05` | every 4h | MiniMax M2.7 Pro |
+| Overnight collector | `9207808c3231` | 22:00 ET | MiniMax M2.7 Pro |
+| Weekday midday collector | `d0a681dd5281` | 12:30 ET | MiniMax M2.7 Pro |
+
+### Read-only research and risk
+
+| Job | ID | Schedule |
+|---|---|---|
+| Overnight research | `924ad8a43819` | 02:00 ET |
+| Morning open | `8406c57fbed3` | 06:00 ET |
+| Portfolio targets/risk | `10eed04c5db2` | 07:30 ET |
+| Weekday day-trade open | `b2822ae47aba` | 09:30 ET |
+| Morning/midday research | `e995d46f5380` | 10:00 ET |
+| Afternoon research | `e2ebd0513b04` | 14:00 ET |
+| Weekday day-trade PM | `7868408e20fc` | 15:30 ET |
+| Evening research | `e907460f3ed8` | 18:00 ET |
+
+### Execution supervisor
+
+- `a1de626cbce6`, every 2 hours, GPT-5.6 Luna.
+- Receives latest collector/research/risk outputs through `context_from`.
+- Only component authorized to invoke the bounded executor.
+- Must process each reviewed Ready card into Executing, Monitoring/Completed, or Blocked/HOLD in the same cycle.
+
+All Telegram outputs use compact line-limited templates; detailed evidence belongs in `docs/kanban-evidence/`, state files, and logs.
+
+## 5. Yield accounting
+
+Every portfolio/risk/reconciliation report must include:
+
+- JL-USDC current underlying value, supply rate, rewards rate, total rate, withdrawal liquidity, and annual USD-equivalent yield.
+- JupSOL current value, JupSOL/SOL conversion ratio, and a defensible APY source. A single exchange-rate snapshot is not an APY; use documented current staking rate or measured ratio growth over a valid interval and label uncertainty.
+- Total weighted portfolio APY: `sum(position_value × APY) / NAV`.
+- Annual USD-equivalent yield: `sum(position_value × APY)`.
+- Basis-point contribution to NAV for each yield-bearing position.
+
+Never infer yield from receipt-token premium alone; JL-USDC conversion value is accrued underlying value, while APY is a rate over time.
+
+## 5a. Earn deposit and withdraw flow
+
+JL-USDC Earn deposits and withdrawals are executed via Jupiter's router rather than a direct protocol call: the swap route for `USDC → JL-USDC` and `JL-USDC → USDC` is `Jupiter Lend Earn` directly, so the existing executor handles both directions as a normal spot swap.
+
+Operational sequence for any JL-USDC rebalance:
+
+1. Write a dynamic allowlist entry for `JL-USDC` (`9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D`) with the desired per-trade notional cap and a TTL up to 24 hours. The mint is not in the hard-coded allowlist, so it cannot be traded without this step.
+2. Run the bounded executor with `input_mint` and `output_mint` set to either side. Pre-flight checks, program allowlist, transaction decoding, simulation, and post-trade verification all apply normally.
+3. After the trade finalizes, the dynamic allowlist entry is consumed (single-use). A follow-up rebalance requires a fresh entry.
+
+Required policy gates: the notional must satisfy both the active USD cap from `state/position_rules.json` (hard floor $50) and the per-trade wallet ratio from the same file (hard floor 25%). On the current ~$64 wallet that gives a maximum ~$16 single-trade notional.
+
+## 6. Opportunity and arbitrage gate
+
+Scans cover spot, stablecoins, liquid-staking dislocations, synchronized route/venue arbitrage, Earn/Lend/Stake, LP/JLP, prediction markets, tokenized assets, and Jupiter ecosystem products.
+
+A candidate requires exact mint/program, issuer/backing/economic rights, entry, target, invalidation, maximum loss, size, current liquidity, all costs, and complete exit/redemption. Arbitrage must use synchronized two-way quotes and remain positive after fees, spread, slippage, priority fee, latency, MEV, inventory, liquidity, settlement, depeg, and failure-to-fill risk. Headline or unsynchronized spreads do not qualify.
+
+## 7. State and evidence
+
+- `state/position_theses.json`: holdings, exact mints, rationale, risks, yield and exit plans.
+- `state/position_rules.json`: active cap and risk limits.
+- `logs/trade_ledger.jsonl`: append-only action records. Do not infer realized P&L from entries that lack a closed position.
+- `docs/JUPITER_KANBAN.md`: project trading lifecycle and evidence archive.
+- `~/.hermes/kanban.db`: dashboard task store; separate from the markdown board.
+- `docs/kanban-evidence/`: timestamped detailed research/reconciliation artifacts.
+
+## 8. Health commands
+
+```bash
+python3 -m pytest tests/test_policy_executor.py -q
+python3 tools/smoke-test-policy-guard.py
+python3 tools/policy_engine.py status
+hermes kanban stats
+hermes cronjob list
+```
+
+Safe executor test: run the command in section 3 without `--execute`. Never use a made-up NAV, notional, maximum loss, mint, or raw amount.
+
+## 9. Current known limitations
+
+- JL-USDC Earn deposits/withdrawals work through the dynamic allowlist + Jupiter router (route `Jupiter Lend Earn`); no dedicated protocol-call executor yet, so each rebalance consumes a dynamic-allowlist entry. A direct-protocol Earn path would skip the dynamic-allowlist hop but adds Anchor discriminator handling and is not yet built.
+- Staking (JupSOL), LP/JLP, prediction markets, tokenized assets, bridges, Base, and perps do not have a generic bounded executor and remain research-only unless a separate verified path is built.
+- Realized daily P&L and two-loss counting are policy requirements but need reliable closed-position accounting before they can be derived automatically; the supervisor must not invent them.
+- Jupiter/Privy/external endpoints can fail or change. Preserve errors verbatim and HOLD on stale or conflicting data.
+- Dashboard Kanban and markdown Kanban are separate; both must be checked to avoid stranded Ready work.

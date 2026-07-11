@@ -1,0 +1,174 @@
+{
+  "updated": "2026-07-11T18:34:02.778659+00:00",
+  "positions": {
+    "JUP": {
+      "bucket": "long_term",
+      "why_held": "Jupiter ecosystem exposure with verified protocol utility, governance, potential Active Staking Rewards, and participation in Jupiter product growth.",
+      "mint": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+      "target_plan": "Review around 0.24 USD; reassess thesis and consider partial USDC profit-taking rather than round-tripping gains.",
+      "invalidation": "Review below 0.17 USD or after material tokenomics, security, governance, or ecosystem deterioration.",
+      "horizon": "months",
+      "yield_plan": "Keep liquid until the exact governance/Earn path is verified; do not lock the full balance.",
+      "key_risks": [
+        "Jupiter ecosystem concentration",
+        "tokenomics/emissions",
+        "governance-contract lockup",
+        "variable rewards"
+      ],
+      "reference_price_usd": 0.207932,
+      "review_note": "CoinGecko 2026-07-11 16:44 UTC: JUP $0.207932, 24h +3.51%, 7d -12.33%, 30d +34.55%, mcap $690.42M, vol $24.19M. Circulating 3,320,312,968 / Total 6,862,434,710.79 / Max 10B. ATH $2.00 (2024-01-31). Jupiter Goes Green DAO passed: net emissions ~0; last team unlock 2026-01-27; Mercurial final 77.97M JUP 2026-02-25; Community (300M) + Strategic (1,332.7M) TBD \u2014 primary residual supply overhang. ASR Q2 2026 (Apr-Jun, 50M JUP pool) claim period OPEN through Oct 8 2026; eligibility requires \u226550 JUP avg stake + DAO vote participation \u2014 wallet holds 53.20 JUP but did not vote, so NOT eligible for Q2 claim. Q3 2026 ASR not yet announced. Governance paused since 2025-07; no re-initiation verified this cycle. Triggers: review ~$0.24 (current ~$0.032 below target); review/invalidation below ~$0.17."
+    },
+    "cbBTC": {
+      "bucket": "long_term",
+      "why_held": "BTC diversification through a verified Solana-wrapped BTC asset with deep reported liquidity and exposure to BTC price appreciation.",
+      "mint": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
+      "target_plan": "Review near 70000 USD; consider partial USDC profit-taking if liquidity and wrapped-asset conditions remain sound.",
+      "invalidation": "Review below 56000 USD or on custody, bridge, reserve, redemption, or wrapped-asset concerns.",
+      "horizon": "months to years",
+      "yield_plan": "No yield product chosen yet; compare lending or Earn only after reserve and withdrawal checks.",
+      "key_risks": [
+        "BTC volatility",
+        "wrapped-asset/custody risk",
+        "redemption/liquidity risk",
+        "smart-contract risk"
+      ],
+      "reference_price_usd": 64110.0
+    },
+    "JupSOL": {
+      "bucket": "long_term_staking",
+      "why_held": "Liquid SOL staking exposure intended to earn staking/MEV-related yield while remaining tradable or usable in DeFi.",
+      "mint": "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v",
+      "target_plan": "Monitor JupSOL/SOL exchange-rate growth, validator health, liquidity, and reward accrual; rebalance if liquidity or validator risk changes.",
+      "invalidation": "Review on depeg, validator/security issue, major liquidity loss, or inability to trade/redeem.",
+      "horizon": "months",
+      "yield_plan": "Liquid staking through JupSOL; current APY sourced from Solana Compass 5.71% (median last 10 epochs methodology), rewards accrue through JupSOL/SOL exchange-rate growth; not inferred from a single snapshot.",
+      "key_risks": [
+        "liquid-staking depeg",
+        "validator risk",
+        "Sanctum/stake-pool smart-contract risk",
+        "SOL volatility"
+      ],
+      "reference_price_usd": 93.488726,
+      "invalidator_note": "Depeg check 2026-07-11T16:44Z (slot 432,259,524): 0.025072774 JupSOL = 0.0300024 SOL via Jupiter Quote (AlphaQ route, 0.00003% impact); mark ratio 93.21/77.75 = 1.19869. Quote-vs-mark drift 0.17% (within \u00b10.5% tolerance). Sanctum Infinity 0-impact swaps + sanctum-multi stake-pool program intact. Trigger review on validator count decline, sanctum-multi deprecation, or >1% depeg.",
+      "review_note": "Read-only diligence 2026-07-11T18:34:02.778659+00:00: wallet holds 0.025072774 JupSOL, value $2.3440 (363.3 bps NAV). APY 5.71% from Solana Compass current APY/headline methodology (not a single exchange-rate snapshot) => est $0.1338/yr (20.7 bps NAV/yr). Wallet quote 0.030002641 SOL for 0.025072774 JupSOL = ratio 1.196622; Compass pool token value 1.198 SOL, total staked 5,242,710.0 SOL, active validators 4, pool token supply 4,377,825.31. Official docs: rewards are staking + 100% MEV kickbacks + 100% priority fees; Jupiter validator 0% commission; Sanctum epoch fee 5% on base staking rewards; instant swap or delayed unstake (~2 days) with 0.1% withdrawal fee if unwrapping/withdrawal path. Risk: LST depeg/liquidity, validator concentration/performance, Sanctum/SPL stake-pool program/multisig/management authority, SOL volatility. No transaction. Evidence: evidence/jupiter-yield-diligence-2026-07-11T18-34-02-778659+00-00.json, evidence/jupiter-yield-diligence-2026-07-11T18-34-02-778659+00-00.md."
+    },
+    "JL-USDC": {
+      "bucket": "long_term_earn",
+      "why_held": "Stablecoin lending exposure intended to earn variable borrower interest while preserving USDC-denominated accounting.",
+      "underlying_mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "receipt_mint": "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D",
+      "target_plan": "Monitor supply APY, utilization, available withdrawal liquidity, and net yield after fees; withdraw or rebalance if economics deteriorate.",
+      "invalidation": "Review on smart-contract exploit, oracle issue, withdrawal restriction, stablecoin depeg, or severe liquidity decline.",
+      "horizon": "weeks to months",
+      "yield_plan": "Variable Jupiter Lend Earn supply; current totalRate 4.48% = supply 3.75% + rewards 0.73%; withdrawals subject to dynamic liquidity limits.",
+      "key_risks": [
+        "smart-contract risk",
+        "oracle risk",
+        "borrower bad debt",
+        "withdrawal liquidity",
+        "USDC depeg",
+        "variable APY"
+      ],
+      "reference_price_usd": 1.050958518,
+      "review_note": "Read-only diligence 2026-07-11T18:34:02.778659+00:00: wallet holds 2.968213 jlUSDC; convertToAssets 1051077 => 3.119820 USDC, value $3.1195 (483.5 bps NAV). APY 4.48% (supply 3.75% + rewards 0.73%) => est $0.1398/yr (21.7 bps NAV/yr). TVL/totalAssets $415,680,938.45; totalSupply 395,480,861.25; USDC liquidity utilization 86.35% from 19 USDC borrow vaults; withdrawable $56,633,516.93, base limit $8,260,937.08, expand 50%/6h. Jupiter Quote wallet exit 3.119821 USDC via Jupiter Lend Earn, impact 0.0000002147559154279022428646. Risks verified from official docs/audit sources: smart-contract, oracle, borrower bad debt, USDC depeg, dynamic withdrawal limits; Jupiter Lend uses a shared liquidity layer, so prior 'zero contagion' messaging should not be assumed. No transaction. Evidence: evidence/jupiter-yield-diligence-2026-07-11T18-34-02-778659+00-00.json, evidence/jupiter-yield-diligence-2026-07-11T18-34-02-778659+00-00.md."
+    },
+    "JLP_watchlist": {
+      "bucket": "long_term_yield_watchlist",
+      "why_considered": "Jupiter Perps liquidity-provider exposure with a documented share of trading fees.",
+      "mint": "27G8MtK7VtTcCHkpASjSDdkWWYfoqT6ggEuKidVJidD4",
+      "status": "watchlist_not_held_pending_jupiter_perps_due_diligence",
+      "target_plan": "Compare net fee yield, pool composition, trader PnL, mint/redeem fees, liquidity, and downside before purchase.",
+      "invalidation": "Do not enter if pool risk, redemption mechanics, or net yield are unclear.",
+      "horizon": "months",
+      "yield_plan": "Potential perps fee accrual, not guaranteed yield.",
+      "key_risks": [
+        "perps trader PnL against pool",
+        "pool composition",
+        "smart-contract risk",
+        "variable fees",
+        "redemption fees"
+      ],
+      "review_note": "CoinGecko 2026-07-11 16:44 UTC: JLP $3.66, 24h +0.20%, 7d -1.56%, 30d +10.78% (recovery), mcap $825.57M, vol $1.31M, circ/total supply 225.665M (no inflation). JupUSD added as 6th custody asset on 2026-06-30 (per @JupiterExchange / CryptoBriefing / Solana Compass). Jupiter Quote 1-unit test confirms $3.66 at 0.00025% impact via Whirlpool; 1k-unit test $3.63M at 0.00758% impact via 4-hop Perps-dominant route. JupUSD reserves ~90% in USDtb (Ethena, BlackRock BUIDL-token-backed) \u2192 indirect exposure to RWA / tokenized-Treasury mechanics. Pool APY methodology = 75% of Perps fees (open/close/borrow/price-impact/swap), hourly re-deposit; excludes asset appreciation and trader PnL. Historical headline 8-20% APY (Bankless/CMC); up to 43% via JLP Loan (third-party X). No entry: pool composition + JupUSD/BlackRock-BUIDL custody chain not fully reconciled; trader PnL data not pulled this cycle.",
+      "reference_price_usd": 3.66
+    },
+    "SOL": {
+      "bucket": "stable_reserve",
+      "why_held": "Primary fee reserve and largest liquid holding; no active trade thesis while wallet is small and concentrated.",
+      "mint": "So11111111111111111111111111111111111111112",
+      "reference_price_usd": 78.29,
+      "target_plan": "No target; preserve fee reserve and require positive net edge before any reduction.",
+      "invalidation": "Network incident, balance discrepancy, or material liquidity deterioration.",
+      "horizon": "reserve/short-term",
+      "yield_plan": "No staking/lending action planned.",
+      "key_risks": [
+        "SOL volatility",
+        "fee reserve depletion",
+        "network/protocol risk"
+      ]
+    },
+    "USDC": {
+      "bucket": "stable_reserve",
+      "why_held": "Same-chain reserve and drawdown buffer.",
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "reference_price_usd": 0.99984,
+      "target_plan": "Hold; rebuild reserve before active trading.",
+      "invalidation": "Review below 0.995 or on issuer/liquidity event.",
+      "horizon": "reserve",
+      "yield_plan": "No new Earn/Lend allocation; existing JL-USDC remains separate.",
+      "key_risks": [
+        "USDC depeg",
+        "issuer/regulatory risk",
+        "small reserve size"
+      ]
+    },
+    "ANSEM": {
+      "bucket": "speculation",
+      "why_held": "Tiny verified Token-2022 speculative position; finalized Jupiter purchase reconciled directly on-chain.",
+      "mint": "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump",
+      "token_program": "token-2022",
+      "amount": 6.449815,
+      "target_plan": "No add. Review only with current liquidity, holder distribution, and a verified exit quote.",
+      "invalidation": "Exit/review on liquidity collapse, exploit/scam evidence, severe concentration, or inability to quote/transfer.",
+      "horizon": "speculation; mandatory review before any additional action",
+      "yield_plan": "None. Verified as ANSEM Token-2022 speculative token, not JupSOL; no known staking/lending/liquidity yield credited.",
+      "key_risks": [
+        "meme volatility",
+        "Token-2022 extensions",
+        "holder concentration",
+        "liquidity",
+        "listing/catalyst risk"
+      ],
+      "reconciliation_note": "Confirmed from finalized transaction 4351SQXpsV692NMoYxJY5Hx3wmumct3zvpHoL1SAthm5dFBFZrL65dBEVGJu5BnHULnVhEdDF11ZitbqyGuxfQUJ; omitted previously because the standard SPL poller did not query Token-2022.",
+      "review_note": "Read-only yield diligence 2026-07-11T18:34:02.778659+00:00: ANSEM value $1.6637 by Jupiter Price v3 but explicitly excluded from yield; not JupSOL and no known yield source."
+    }
+  },
+  "wallet_snapshot": {
+    "nav_usd_approx": 64.51,
+    "balances": {
+      "SOL": 0.461193067,
+      "JUP": 53.19543,
+      "USDC": 3.921777,
+      "JL-USDC": 2.968213,
+      "JupSOL": 0.025072774,
+      "cbBTC": 9.719e-05,
+      "ANSEM": 6.449815
+    },
+    "live_implied_prices_usd": {
+      "SOL": 78.12423638,
+      "JUP": 0.210230834,
+      "USDC": 0.999887276,
+      "JL-USDC": 1.050958518,
+      "JupSOL": 93.488726233,
+      "cbBTC": 64311.123571284,
+      "ANSEM": 0.257940646
+    },
+    "yield": {
+      "weighted_portfolio_apy_pct": 0.4241,
+      "annual_usd_equivalent": 0.2736,
+      "JL-USDC_annual_usd": 0.1398,
+      "JupSOL_annual_usd": 0.1338
+    },
+    "source": "Finalized Solana RPC slot 432275494 + Jupiter Lend/Price/Quote APIs + Solana Compass at 2026-07-11T18:34:02.778659+00:00"
+  },
+  "last_review": "2026-07-11T18:34:02.778659+00:00"
+}

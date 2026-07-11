@@ -332,7 +332,7 @@ def main() -> int:
     theses = json.loads(THESES.read_text())
     rules = json.loads(RULES.read_text())
 
-    wallet = args.wallet or rules.get("wallet") or "<SOLANA_WALLET_ADDRESS>"
+    wallet = args.wallet or rules.get("wallet") or "<YOUR_PRIVY_SOLANA_WALLET>"
     if wallet.startswith("<"):
         print(f"SKIPPED | wallet is a placeholder ({wallet}); set state/position_rules.json wallet or pass --wallet")
         _log_event("SKIP", "wallet placeholder")

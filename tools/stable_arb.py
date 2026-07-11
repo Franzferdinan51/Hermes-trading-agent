@@ -164,7 +164,7 @@ def _simulate_arb(wallet: str, a: str, b: str, amount_a: int, slippage_bps: int)
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--execute", action="store_true")
-    ap.add_argument("--wallet", default="<SOLANA_WALLET_ADDRESS>")
+    ap.add_argument("--wallet", default="<YOUR_PRIVY_SOLANA_WALLET>")
     ap.add_argument("--slippage-bps", type=int, default=DEFAULT_SLIPPAGE_BPS)
     ap.add_argument("--notional-usd", type=float, default=10000.0)
     args = ap.parse_args()

@@ -504,9 +504,12 @@ function populateMacro(data) {
   // Fear & Greed
   const fg = data.fear_greed;
   if (fg) {
-    document.getElementById('fgValue').textContent = fg.value;
-    document.getElementById('fgLabel').textContent = fg.label;
-    document.getElementById('fgPrev').textContent = `prev: ${fg.prev_value}`;
+    const fgEl = document.getElementById('fgValue');
+    if (fgEl) fgEl.textContent = fg.value;
+    const fgLabelEl = document.getElementById('fgLabel');
+    if (fgLabelEl) fgLabelEl.textContent = fg.label || fg.value_classification || '';
+    const fgPrevEl = document.getElementById('fgPrev');
+    if (fgPrevEl) fgPrevEl.textContent = fg.prev_value != null ? `prev: ${fg.prev_value}` : '';
     drawGauge(fg.value);
   }
 
@@ -566,12 +569,29 @@ function populateMacro(data) {
   // Calendar
   const cal = data.calendar || [];
   const calEl = document.getElementById('calendarEvents');
-  if (cal.length) {
-    calEl.innerHTML = cal.slice(0, 4).map(ev => `
-      <div class="calendar-event impact-${ev.impact}">
+  if (cal.length || data.cpi) {
+    let html = '';
+    // Add CPI data if available
+    if (data.cpi) {
+      const c = data.cpi;
+      html += `<div class="calendar-event impact-high">
+        <span class="calendar-event-name">US CPI YoY</span>
+        <span class="calendar-event-date">${c.periodName || c.month + '/' + c.year}</span>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px;">
+          <span style="color:var(--up)">${c.yoy_pct != null ? c.yoy_pct + '%' : '—'}</span>
+          &nbsp;prior: ${c.prior != null ? c.prior : '—'}
+        </div>
+      </div>`;
+    }
+    // Add other calendar events
+    for (const ev of cal.slice(0, 3)) {
+      if (ev.name === 'CPI Release' && data.cpi) continue; // already shown via CPI block
+      html += `<div class="calendar-event impact-${ev.impact}">
         <span class="calendar-event-name">${ev.name}</span>
         <span class="calendar-event-date">${new Date(ev.date_ts * 1000).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
-      </div>`).join('');
+      </div>`;
+    }
+    calEl.innerHTML = html;
   } else {
     calEl.innerHTML = '<div style="font-size:11px;color:var(--text-dim);">No upcoming events (14d)</div>';
   }

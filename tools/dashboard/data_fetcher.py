@@ -277,6 +277,70 @@ def _fetch_coindesk_news(limit: int = 5) -> list[dict]:
         return []
 
 
+def _fetch_cpi_data() -> dict | None:
+    """
+    Fetch latest US CPI data from Bureau of Labor Statistics (BLS Public API).
+    Returns {yoy_pct, prior_pct, month, year} or None on failure.
+    """
+    import json as json_lib
+    try:
+        req = urllib.request.Request(
+            "https://api.bls.gov/publicAPI/v2/timeseries/data/",
+            data=json_lib.dumps({
+                "seriesid": ["CUUR0000SA0"],
+                "startyear": "2023",
+                "endyear": "2026",
+            }).encode(),
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json_lib.loads(resp.read())
+        series = (data.get("Results") or {}).get("series", [])
+        if not series:
+            return None
+        observations = sorted(
+            series[0].get("data", []),
+            key=lambda x: (x.get("year", "0"), x.get("period", "M00")),
+            reverse=True,
+        )
+        if len(observations) < 2:
+            return None
+        latest = observations[0]
+        prior  = observations[1]
+        def pct(v): return round((float(v) - 100) * 100 / 100, 1)
+        return {
+            "yoy_pct":   round((float(latest["value"]) - float(prior["value"])) / float(prior["value"]) * 100, 1),
+            "level":     round(float(latest["value"]), 2),
+            "prior":     round(float(prior["value"]), 2),
+            "month":     latest.get("period", "").replace("M", ""),
+            "year":      latest.get("year", ""),
+            "periodName": f"{latest.get('periodName', latest.get('period',''))} {latest.get('year','')}",
+        }
+    except Exception:
+        return None
+
+
+def _fetch_fear_greed_direct() -> dict | None:
+    """Direct Fear & Greed fetch as fallback."""
+    try:
+        data = _get_json("https://api.alternative.me/fng/?limit=1")
+        items = data.get("data", []) if isinstance(data, dict) else []
+        if not items:
+            return None
+        latest = items[0]
+        v = int(latest.get("value", 50))
+        return {
+            "value": v,
+            "label": "Extreme Fear" if v <= 20 else "Fear" if v <= 40 else "Neutral" if v <= 60 else "Greed" if v <= 80 else "Extreme Greed",
+            "timestamp": latest.get("timestamp", ""),
+        }
+    except Exception:
+        return None
+
+
 def get_news_response() -> dict:
     """Returns {news: [...]} from CoinDesk RSS."""
     return {"news": _fetch_coindesk_news(limit=5)}
@@ -308,6 +372,13 @@ def get_macro_response() -> dict:
         "volume_24h":       q.get("volume_24h"),
     }
     scan["cp_btc"] = cp_btc
+    # Inject direct F&G if macro scan missed it
+    if not scan.get("fear_greed"):
+        scan["fear_greed"] = _fetch_fear_greed_direct()
+    # Inject CPI data
+    cpi = _fetch_cpi_data()
+    if cpi:
+        scan["cpi"] = cpi
     return scan
 
 

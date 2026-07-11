@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="refresh" content="90" />
+  <title>Hermes Trading Terminal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+
+  <!-- TradingView Lightweight Charts CDN -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+
+  <style>
+    /* Coin icon grid helper */
+    .coin-img { width:18px; height:18px; border-radius:50%; vertical-align:middle; margin-right:4px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ HEADER -->
+<header class="header">
+  <div class="header-title">⚡ HERMES <span>TRADING</span> TERMINAL</div>
+  <div class="header-right">
+    <div class="last-update" id="lastUpdate">Loading…</div>
+    <div>
+      <div class="nav-label">Portfolio NAV</div>
+      <div class="nav-value" id="navValue">—</div>
+    </div>
+    <div id="alertBadge" class="alert-badge none">0</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════ GRID -->
+<main class="dashboard-grid">
+
+  <!-- ──────────────── COL 1: MACRO INTELLIGENCE ─────── -->
+  <aside class="panel" id="panelMacro">
+    <div class="panel-header">
+      <span class="panel-title accent">📡 Macro Intelligence</span>
+      <span class="panel-title" id="macroStatus" style="color:var(--text-dim);font-size:10px;">● LIVE</span>
+    </div>
+
+    <!-- Fear & Greed -->
+    <div class="fear-greed-display" id="fgBlock">
+      <div class="fear-greed-gauge">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle class="gauge-bg" cx="32" cy="32" r="26" />
+          <circle class="gauge-fill" id="fgArc" cx="32" cy="32" r="26"
+            stroke-dasharray="163.36" stroke-dashoffset="163.36" />
+        </svg>
+        <div class="fear-greed-value">
+          <span id="fgValue" class="skeleton skeleton-line" style="width:28px;height:18px;border-radius:3px;"></span>
+          <span class="fear-greed-label">F&G</span>
+        </div>
+      </div>
+      <div>
+        <div id="fgLabel" class="fear-greed-meta" style="font-size:13px;font-weight:700;">—</div>
+        <div class="fear-greed-prev" id="fgPrev">prev: —</div>
+      </div>
+    </div>
+
+    <!-- BTC Multi-Timeframe -->
+    <div style="margin-bottom:10px;">
+      <div class="panel-title" style="margin-bottom:6px;">₿ BTC Multi-Timeframe</div>
+      <div class="btc-tf-grid" id="btcTfGrid">
+        <div class="tf-cell"><div class="tf-cell-label">15m</div><div class="tf-cell-value neutral" id="tf15m">—</div></div>
+        <div class="tf-cell"><div class="tf-cell-label">30m</div><div class="tf-cell-value neutral" id="tf30m">—</div></div>
+        <div class="tf-cell"><div class="tf-cell-label">1h</div><div class="tf-cell-value neutral" id="tf1h">—</div></div>
+        <div class="tf-cell"><div class="tf-cell-label">6h</div><div class="tf-cell-value neutral" id="tf6h">—</div></div>
+        <div class="tf-cell"><div class="tf-cell-label">24h</div><div class="tf-cell-value neutral" id="tf24h">—</div></div>
+        <div class="tf-cell"><div class="tf-cell-label">7d</div><div class="tf-cell-value neutral" id="tf7d">—</div></div>
+      </div>
+      <div id="athInfo" style="font-size:10px;color:var(--text-dim);margin-top:4px;">ATH: —</div>
+    </div>
+
+    <!-- Macro Metrics -->
+    <div class="macro-metrics" id="macroMetrics">
+      <div class="macro-metric">
+        <span class="macro-metric-label">S&P 500</span>
+        <span class="macro-metric-value" id="sp500">—</span>
+      </div>
+      <div class="macro-metric">
+        <span class="macro-metric-label">DXY Index</span>
+        <span class="macro-metric-value" id="dxy">—</span>
+      </div>
+      <div class="macro-metric">
+        <span class="macro-metric-label">10Y Yield</span>
+        <span class="macro-metric-value" id="us10y">—</span>
+      </div>
+      <div class="macro-metric">
+        <span class="macro-metric-label">BTC Price</span>
+        <span class="macro-metric-value" id="btcPrice">—</span>
+      </div>
+      <div class="macro-metric">
+        <span class="macro-metric-label">ETH/BTC</span>
+        <span class="macro-metric-value" id="ethBtc">—</span>
+      </div>
+    </div>
+
+    <!-- Network Health -->
+    <div style="margin-top:10px;">
+      <div class="panel-title" style="margin-bottom:6px;">🔗 Solana Network</div>
+      <div class="network-row" id="networkRow">
+        <div class="network-chip"><span class="dot" id="solDot"></span><span id="solTps">— TPS</span></div>
+        <div class="network-chip"><span id="solSlot">Slot —</span></div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div style="margin-top:10px;">
+      <div class="panel-title" style="margin-bottom:6px;">📅 Macro Calendar</div>
+      <div id="calendarEvents">
+        <div class="skeleton skeleton-line" style="width:90%"></div>
+        <div class="skeleton skeleton-line" style="width:70%"></div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div style="margin-top:10px;">
+      <div class="panel-title red" style="margin-bottom:6px;">🚨 Active Alerts</div>
+      <div class="alert-list" id="alertList">
+        <div style="font-size:11px;color:var(--text-dim);padding:6px 0;">No active alerts</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ──────────────── COL 2: PORTFOLIO ──────────────── -->
+  <aside class="panel">
+    <div class="panel-header">
+      <span class="panel-title green">💼 Portfolio</span>
+    </div>
+
+    <!-- NAV Display -->
+    <div class="nav-display">
+      <div class="label">Total Portfolio Value</div>
+      <div class="value" id="navDisplay">$—</div>
+      <div class="sub" id="navSub">— holdings across — assets</div>
+    </div>
+
+    <!-- Holdings Table -->
+    <table class="holdings-table">
+      <thead>
+        <tr>
+          <th>Asset</th>
+          <th>Price</th>
+          <th>24h</th>
+          <th>Holdings</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody id="holdingsBody">
+        <tr><td colspan="5"><div class="skeleton skeleton-line" style="width:100%"></div></td></tr>
+        <tr><td colspan="5"><div class="skeleton skeleton-line" style="width:85%"></div></td></tr>
+        <tr><td colspan="5"><div class="skeleton skeleton-line" style="width:90%"></div></td></tr>
+      </tbody>
+    </table>
+
+    <!-- Allocation Bar -->
+    <div style="margin-top:10px;">
+      <div class="panel-title" style="margin-bottom:6px;">Allocation</div>
+      <div class="allocation-bar" id="allocBar"></div>
+      <div class="alloc-legend" id="allocLegend"></div>
+    </div>
+
+    <!-- Profit/Loss Summary -->
+    <div style="margin-top:10px;">
+      <div class="panel-title" style="margin-bottom:6px;">P&L Summary</div>
+      <div id="pnlSummary">
+        <div class="skeleton skeleton-line" style="width:80%"></div>
+        <div class="skeleton skeleton-line" style="width:60%"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ──────────────── COL 3: TRADINGVIEW CHART ──────── -->
+  <section class="panel chart-panel">
+    <div class="panel-header">
+      <span class="panel-title purple">📈 Chart</span>
+      <div class="chart-controls">
+        <select class="symbol-select" id="symbolSelect">
+          <option value="SOL">SOL</option>
+          <option value="BTC">BTC</option>
+          <option value="ETH">ETH</option>
+        </select>
+        <button class="tf-btn" data-interval="60">1H</button>
+        <button class="tf-btn active" data-interval="240">4H</button>
+        <button class="tf-btn" data-interval="1440">1D</button>
+        <button class="tf-btn" data-interval="10080">1W</button>
+      </div>
+    </div>
+    <div id="tv_chart" style="height:380px;width:100%;border-radius:6px;overflow:hidden;"></div>
+    <div style="font-size:10px;color:var(--text-dim);margin-top:4px;text-align:right;">
+      Chart powered by <span style="color:var(--accent)">TradingView Lightweight Charts</span>
+    </div>
+  </section>
+
+  <!-- ──────────────── COL 4: OPPORTUNITIES ──────────── -->
+  <aside class="panel">
+    <div class="panel-header">
+      <span class="panel-title yellow">🎯 Opportunities</span>
+    </div>
+
+    <!-- Top Traded -->
+    <div class="opportunities-section">
+      <div class="opportunities-section-title">🔥 Top Traded</div>
+      <table class="opportunity-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>24h</th>
+            <th>Volume</th>
+          </tr>
+        </thead>
+        <tbody id="topTradedBody">
+          <tr><td colspan="5"><div class="skeleton skeleton-line" style="width:100%"></div></td></tr>
+          <tr><td colspan="5"><div class="skeleton skeleton-line" style="width:80%"></div></td></tr>
+          <tr><td colspan="5"><div class="skeleton skeleton-line" style="width:90%"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Cooking -->
+    <div class="opportunities-section">
+      <div class="opportunities-section-title">🆕 New / Cooking</div>
+      <table class="opportunity-table">
+        <thead>
+          <tr>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>24h</th>
+            <th>Liq.</th>
+          </tr>
+        </thead>
+        <tbody id="cookingBody">
+          <tr><td colspan="4"><div class="skeleton skeleton-line" style="width:100%"></div></td></tr>
+          <tr><td colspan="4"><div class="skeleton skeleton-line" style="width:80%"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Volume Spikes -->
+    <div class="opportunities-section">
+      <div class="opportunities-section-title">⚡ Volume Spikes</div>
+      <div id="volumeSpikes">
+        <div style="font-size:11px;color:var(--text-dim);padding:4px 0;">Scanning…</div>
+      </div>
+    </div>
+
+    <!-- News Headlines -->
+    <div>
+      <div class="opportunities-section-title">📰 Crypto News</div>
+      <div id="newsList" style="display:flex;flex-direction:column;gap:6px;">
+        <div class="skeleton skeleton-line" style="width:100%"></div>
+        <div class="skeleton skeleton-line" style="width:85%"></div>
+        <div class="skeleton skeleton-line" style="width:90%"></div>
+      </div>
+    </div>
+  </aside>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════ JAVASCRIPT -->
+<script>
+/* ─────────────────────────────────────────────────────────
+   CONSTANTS
+───────────────────────────────────────────────────────── */
+const COIN_IMAGES = {
+  BTC:  'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+  ETH:  'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+  SOL:  'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+  JUP:  'https://assets.coingecko.com/coins/images/29488/small/jup.png',
+  cbBTC:'https://assets.coingecko.com/coins/images/27280/small/cbBTC.png',
+  USDC: 'https://assets.coingecko.com/coins/images/6319/small/USD_Coin_icon.png',
+};
+
+const COINPAPRIKA_ID = { SOL:'sol-solana', BTC:'btc-bitcoin', ETH:'eth-ethereum' };
+const CACHE_TTL = 60_000;
+const POLL_INTERVAL = 60_000;
+
+let cache = {};
+let chart = null;
+let candleSeries = null;
+let volumeSeries = null;
+let currentSymbol = 'SOL';
+let currentInterval = '240';
+
+/* ─────────────────────────────────────────────────────────
+   UTILITIES
+───────────────────────────────────────────────────────── */
+function fmt(n, decimals=2) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+function fmtPct(n) { return (n >= 0 ? '+' : '') + fmt(n, 2) + '%'; }
+function fmtPrice(n) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  if (Math.abs(n) < 0.001) return '$' + fmt(n, 8);
+  if (Math.abs(n) < 1) return '$' + fmt(n, 6);
+  return '$' + fmt(n, 2);
+}
+function pctColor(v) { return v >= 0 ? 'up' : 'down'; }
+function setContent(el, html) { if (el) el.innerHTML = html; }
+
+/* ─────────────────────────────────────────────────────────
+   CACHE HELPERS
+───────────────────────────────────────────────────────── */
+function cached(key, fn, ttl=CACHE_TTL) {
+  const now = Date.now();
+  if (cache[key] && now - cache[key].ts < ttl) return Promise.resolve(cache[key].v);
+  return fn().then(v => { cache[key] = { v, ts: now }; return v; });
+}
+function invalidate(key) { delete cache[key]; }
+
+/* ─────────────────────────────────────────────────────────
+   API CALLS
+───────────────────────────────────────────────────────── */
+async function api(url, key=url) {
+  return cached(key, async () => {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    } catch(e) { return null; }
+  });
+}
+
+/* ─────────────────────────────────────────────────────────
+   FEAR & GREED GAUGE
+───────────────────────────────────────────────────────── */
+function drawGauge(value) {
+  const arc = document.getElementById('fgArc');
+  if (!arc || !value) return;
+  const circumference = 163.36;
+  const offset = circumference - (value / 100) * circumference;
+  arc.style.strokeDashoffset = offset;
+  let color = '#8b949e';
+  if (value <= 20) color = '#f85149';
+  else if (value <= 40) color = '#d29922';
+  else if (value <= 60) color = '#d29922';
+  else if (value <= 80) color = '#3fb950';
+  else color = '#3fb950';
+  arc.style.stroke = color;
+}
+
+/* ─────────────────────────────────────────────────────────
+   ALLOCATION BAR COLORS
+───────────────────────────────────────────────────────── */
+const ALLOC_COLORS = ['#58a6ff','#3fb950','#bc8cff','#f0883e','#db61a2','#d29922'];
+
+/* ─────────────────────────────────────────────────────────
+   TRADINGVIEW CHART
+───────────────────────────────────────────────────────── */
+async function loadOHLCV(symbol, interval) {
+  // Use our Flask proxy — avoids CORS and CoinPaprika 402 auth requirement
+  try {
+    const r = await fetch(`/api/chart/${symbol}?interval=${interval}`);
+    if (!r.ok) { console.error('chart fetch failed', r.status); return []; }
+    const data = await r.json();
+    console.log('OHLCV received:', data.candles?.length, 'candles, first:', data.candles?.[0]);
+    return data.candles || [];
+  } catch(e) { console.error('OHLCV fetch error:', e); return []; }
+}
+
+function toTVFormat(candles) {
+  return candles.map(c => ({
+    time: c.timestamp ? Math.floor(new Date(c.timestamp).getTime() / 1000) : Math.floor(new Date(c.period).getTime() / 1000),
+    open: parseFloat(c.open),
+    high: parseFloat(c.high),
+    low: parseFloat(c.low),
+    close: parseFloat(c.close),
+    value: parseFloat(c.volume || 0),
+  }));
+}
+
+async function initChart(symbol, interval) {
+  const container = document.getElementById('tv_chart');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const candles = await loadOHLCV(symbol, interval);
+  const tvData = toTVFormat(candles);
+
+  if (!tvData.length) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-dim);">No chart data available</div>';
+    return;
+  }
+
+  const lastPrice = tvData[tvData.length - 1].close;
+
+  if (chart) { chart.remove(); chart = null; }
+
+  try {
+    chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: container.clientHeight - 8,
+      layout: {
+        background: { type: 'solid', color: '#0d1117' },
+        textColor: '#e6edf3',
+      },
+      grid: {
+        vertLines: { color: '#30363d' },
+        horzLines: { color: '#30363d' },
+      },
+      crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+      },
+      rightPriceScale: {
+        borderColor: '#30363d',
+      },
+      timeScale: {
+        borderColor: '#30363d',
+        timeVisible: true,
+        fixLeftEdge: false,
+        fixRightEdge: false,
+      },
+      handleScroll: true,
+      handleScale: true,
+    });
+  } catch(e) {
+    console.error('createChart error:', e);
+    container.innerHTML = '<div style="color:#f85149;padding:16px;">Chart error: ' + e.message + '</div>';
+    return;
+  }
+
+  try {
+    candleSeries = chart.addCandlestickSeries({
+      upColor: '#3fb950',
+      downColor: '#f85149',
+      borderUpColor: '#3fb950',
+      borderDownColor: '#f85149',
+      wickUpColor: '#3fb950',
+      wickDownColor: '#f85149',
+    });
+    candleSeries.setData(tvData);
+  } catch(e) {
+    console.error('addCandlestickSeries error:', e);
+  }
+
+  try {
+    volumeSeries = chart.addHistogramSeries({
+      color: '#58a6ff',
+      priceFormat: { type: 'volume' },
+      priceScaleId: '',
+    });
+    volumeSeries.priceScale().applyOptions({
+      scaleMargins: { top: 0.85, bottom: 0 },
+    });
+    volumeSeries.setData(tvData.map(d => ({
+      time: d.time,
+      value: d.value || 0,
+      color: d.close >= d.open ? 'rgba(63,185,80,0.3)' : 'rgba(248,81,73,0.3)',
+    })));
+  } catch(e) {
+    console.error('addHistogramSeries error:', e);
+  }
+
+  try {
+    chart.addPriceLine({
+      price: lastPrice,
+      color: '#58a6ff',
+      lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Dashed,
+      axisLabelVisible: true,
+      title: 'LAST',
+    });
+  } catch(e) {
+    // addPriceLine not available in all lightweight-charts versions
+  }
+
+  chart.timeScale().fitContent();
+
+  // Resize observer
+  const ro = new ResizeObserver(() => {
+    if (chart && container) {
+      chart.applyOptions({ width: container.clientWidth, height: container.clientHeight - 8 });
+    }
+  });
+  ro.observe(container);
+}
+
+function switchSymbol(symbol) {
+  currentSymbol = symbol;
+  initChart(symbol, currentInterval);
+}
+function switchInterval(interval) {
+  currentInterval = interval;
+  document.querySelectorAll('.tf-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.interval === interval);
+  });
+  initChart(currentSymbol, interval);
+}
+
+/* ─────────────────────────────────────────────────────────
+   POPULATE MACRO PANEL
+───────────────────────────────────────────────────────── */
+function populateMacro(data) {
+  if (!data) return;
+
+  // Fear & Greed
+  const fg = data.fear_greed;
+  if (fg) {
+    document.getElementById('fgValue').textContent = fg.value;
+    document.getElementById('fgLabel').textContent = fg.label;
+    document.getElementById('fgPrev').textContent = `prev: ${fg.prev_value}`;
+    drawGauge(fg.value);
+  }
+
+  // BTC data
+  const btc = data.btc;
+  if (btc) {
+    document.getElementById('btcPrice').textContent = fmtPrice(btc.price_usd);
+    document.getElementById('btcPrice').className = 'macro-metric-value ' + pctColor(btc.change_24h_pct);
+    document.getElementById('ethBtc').textContent = fmt(btc.eth_btc_ratio, 6);
+  }
+
+  // Multi-tf from CoinPaprika (data.cp_btc)
+  const cp = data.cp_btc || {};
+  const tfMap = { tf15m:'change_15m_pct', tf30m:'change_30m_pct', tf1h:'change_1h_pct',
+                  tf6h:'change_6h_pct', tf24h:'change_24h_pct', tf7d:'change_7d_pct' };
+  for (const [elId, key] of Object.entries(tfMap)) {
+    const el = document.getElementById(elId);
+    if (!el) continue;
+    const v = cp[key];
+    el.textContent = v !== null && v !== undefined ? fmtPct(v) : '—';
+    el.className = 'tf-cell-value ' + (v > 0 ? 'up' : v < 0 ? 'down' : 'neutral');
+  }
+  if (cp.ath_price) {
+    document.getElementById('athInfo').textContent =
+      `ATH: ${fmtPrice(cp.ath_price)} (${fmt(cp.from_ath_pct, 1)}% from ATH)`;
+  }
+
+  // Equity/Bond
+  const eb = data.equity_bond;
+  if (eb) {
+    if (eb.sp500_price) {
+      document.getElementById('sp500').textContent = fmt(eb.sp500_price, 2);
+      document.getElementById('sp500').className = 'macro-metric-value ' + pctColor(eb.sp500_change_24h_pct);
+    }
+    if (eb.dxy_index) {
+      document.getElementById('dxy').textContent = fmt(eb.dxy_index, 3);
+      document.getElementById('dxy').className = 'macro-metric-value ' + pctColor(eb.dxy_change_24h_pct);
+    }
+    if (eb.us10y_yield_pct) {
+      document.getElementById('us10y').textContent = fmt(eb.us10y_yield_pct, 3) + '%';
+    }
+  }
+
+  // Network
+  const net = data.network;
+  if (net) {
+    const dot = document.getElementById('solDot');
+    if (net.solana_tps) {
+      document.getElementById('solTps').textContent = fmt(net.solana_tps, 0) + ' TPS';
+      dot.className = 'dot' + (net.solana_tps < 1000 ? ' warn' : '');
+    }
+    if (net.solana_slot) {
+      document.getElementById('solSlot').textContent = 'Slot ' + fmt(net.solana_slot, 0);
+    }
+  }
+
+  // Calendar
+  const cal = data.calendar || [];
+  const calEl = document.getElementById('calendarEvents');
+  if (cal.length) {
+    calEl.innerHTML = cal.slice(0, 4).map(ev => `
+      <div class="calendar-event impact-${ev.impact}">
+        <span class="calendar-event-name">${ev.name}</span>
+        <span class="calendar-event-date">${new Date(ev.date_ts * 1000).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+      </div>`).join('');
+  } else {
+    calEl.innerHTML = '<div style="font-size:11px;color:var(--text-dim);">No upcoming events (14d)</div>';
+  }
+}
+
+/* ─────────────────────────────────────────────────────────
+   POPULATE PORTFOLIO
+───────────────────────────────────────────────────────── */
+function populatePortfolio(data) {
+  if (!data || !data.holdings) return;
+  const { holdings, total_nav, total_cost } = data;
+  const pnl = total_nav - total_cost;
+
+  document.getElementById('navValue').textContent = fmtPrice(total_nav);
+  document.getElementById('navDisplay').textContent = fmtPrice(total_nav);
+
+  const body = document.getElementById('holdingsBody');
+  body.innerHTML = holdings.map(h => `
+    <tr>
+      <td class="coin">
+        <img class="coin-img" src="${COIN_IMAGES[h.symbol] || ''}" alt="${h.symbol}"
+             onerror="this.style.display='none'" />
+        ${h.symbol}
+      </td>
+      <td>${fmtPrice(h.price_usd)}</td>
+      <td class="${pctColor(h.change_24h)}">${fmtPct(h.change_24h)}</td>
+      <td>${fmt(h.amount, h.amount < 0.01 ? 8 : 4)}</td>
+      <td>${fmtPrice(h.value_usd)}</td>
+    </tr>`).join('');
+
+  // Allocation bar
+  const totalVal = holdings.reduce((s, h) => s + h.value_usd, 0);
+  const bar = document.getElementById('allocBar');
+  const legend = document.getElementById('allocLegend');
+  bar.innerHTML = holdings.map((h, i) => {
+    const pct = totalVal ? (h.value_usd / totalVal * 100) : 0;
+    return `<div class="allocation-seg" style="width:${pct}%;background:${ALLOC_COLORS[i % ALLOC_COLORS.length]};"></div>`;
+  }).join('');
+  legend.innerHTML = holdings.map((h, i) => {
+    const pct = totalVal ? (h.value_usd / totalVal * 100) : 0;
+    return `<span class="alloc-tag"><span class="alloc-dot" style="background:${ALLOC_COLORS[i % ALLOC_COLORS.length]};"></span>${h.symbol} ${fmt(pct, 1)}%</span>`;
+  }).join('');
+
+  // NAV sub
+  document.getElementById('navSub').textContent =
+    `${holdings.length} holdings across ${holdings.filter(h=>h.value_usd>0).length} assets`;
+
+  // P&L summary
+  const pnlEl = document.getElementById('pnlSummary');
+  pnlEl.innerHTML = `
+    <div class="macro-metric">
+      <span class="macro-metric-label">Unrealized P&L</span>
+      <span class="macro-metric-value ${pctColor(pnl)}">${fmtPrice(Math.abs(pnl))} ${pnl >= 0 ? '▲' : '▼'}</span>
+    </div>
+    <div class="macro-metric">
+      <span class="macro-metric-label">Cost Basis</span>
+      <span class="macro-metric-value">${fmtPrice(total_cost)}</span>
+    </div>
+  `;
+}
+
+/* ─────────────────────────────────────────────────────────
+   POPULATE OPPORTUNITIES
+───────────────────────────────────────────────────────── */
+function populateMarket(data) {
+  if (!data) return;
+
+  // Top Traded
+  const top = (data.top_traded || []).slice(0, 8);
+  document.getElementById('topTradedBody').innerHTML = top.length
+    ? top.map((t, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td><strong>${t.symbol || t.mint?.slice(0,6) || '?'}</strong></td>
+        <td>${fmtPrice(t.price)}</td>
+        <td class="${pctColor(t.price_change_24h)}">${fmtPct(t.price_change_24h)}</td>
+        <td>${t.volume ? '$' + fmt(t.volume, 1) : '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="5" style="font-size:11px;color:var(--text-dim);">No data</td></tr>';
+
+  // Cooking
+  const cook = (data.cooking || []).slice(0, 5);
+  document.getElementById('cookingBody').innerHTML = cook.length
+    ? cook.map(c => `
+      <tr>
+        <td><strong>${c.symbol || c.mint?.slice(0,6) || '?'}</strong></td>
+        <td>${fmtPrice(c.price)}</td>
+        <td class="${pctColor(c.price_change_24h)}">${fmtPct(c.price_change_24h)}</td>
+        <td>${c.liquidity ? '$' + fmt(c.liquidity, 1) : '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" style="font-size:11px;color:var(--text-dim);">No data</td></tr>';
+
+  // Volume spikes
+  const spikes = (data.volume_spikes || []).slice(0, 5);
+  document.getElementById('volumeSpikes').innerHTML = spikes.length
+    ? spikes.map(s => `
+      <div class="alert-item warning" style="font-size:11px;">
+        <div class="alert-type">⚡ ${s.symbol || s.mint?.slice(0,6)}</div>
+        <div class="alert-msg">Vol ${fmt(s.volume_ratio || 0, 1)}x avg liquidity</div>
+      </div>`).join('')
+    : '<div style="font-size:11px;color:var(--text-dim);">No volume spikes detected</div>';
+}
+
+/* ─────────────────────────────────────────────────────────
+   POPULATE ALERTS
+───────────────────────────────────────────────────────── */
+function populateAlerts(alerts) {
+  if (!alerts || !alerts.length) {
+    setContent(document.getElementById('alertList'), '<div style="font-size:11px;color:var(--text-dim);">No active alerts</div>');
+    document.getElementById('alertBadge').textContent = '0';
+    document.getElementById('alertBadge').className = 'alert-badge none';
+    return;
+  }
+  const badge = document.getElementById('alertBadge');
+  badge.textContent = alerts.length;
+  badge.className = 'alert-badge' + (alerts.some(a => a.severity === 'critical') ? '' : '');
+  badge.style.background = alerts.some(a => a.severity === 'critical') ? 'var(--red)' : 'var(--yellow)';
+
+  setContent(document.getElementById('alertList'), alerts.map(a => `
+    <div class="alert-item ${a.severity}">
+      <div class="alert-type">${a.type.replace(/_/g, ' ')}</div>
+      <div class="alert-msg">${a.message}</div>
+    </div>`).join(''));
+}
+
+/* ─────────────────────────────────────────────────────────
+   POPULATE NEWS
+───────────────────────────────────────────────────────── */
+function populateNews(news) {
+  if (!news || !news.length) return;
+  document.getElementById('newsList').innerHTML = news.slice(0, 4).map(n => `
+    <a href="${n.url}" target="_blank" rel="noopener"
+       style="font-size:11px;color:var(--text-dim);text-decoration:none;line-height:1.4;display:block;"
+       title="${n.headline}">
+      <span style="color:var(--accent);">•</span> ${n.headline.slice(0, 80)}${n.headline.length > 80 ? '…' : ''}
+    </a>`).join('');
+}
+
+/* ─────────────────────────────────────────────────────────
+   UPDATE TIMESTAMP
+───────────────────────────────────────────────────────── */
+function updateTimestamp() {
+  document.getElementById('lastUpdate').textContent =
+    'Updated: ' + new Date().toLocaleTimeString();
+}
+
+/* ─────────────────────────────────────────────────────────
+   POLL ALL
+───────────────────────────────────────────────────────── */
+async function pollAll() {
+  updateTimestamp();
+  invalidate('/api/macro');
+  invalidate('/api/portfolio');
+  invalidate('/api/market');
+  invalidate('/api/alerts');
+  invalidate('/api/news');
+
+  const [macro, portfolio, market, alerts, news] = await Promise.all([
+    api('/api/macro', 'macro'),
+    api('/api/portfolio', 'portfolio'),
+    api('/api/market', 'market'),
+    api('/api/alerts', 'alerts'),
+    api('/api/news', 'news'),
+  ]);
+
+  populateMacro(macro);
+  populatePortfolio(portfolio);
+  populateMarket(market);
+  populateAlerts(alerts?.alerts);
+  populateNews(news?.news);
+
+  // Refresh chart
+  initChart(currentSymbol, currentInterval);
+}
+
+/* ─────────────────────────────────────────────────────────
+   INIT
+───────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  // Chart symbol select
+  document.getElementById('symbolSelect')?.addEventListener('change', e => switchSymbol(e.target.value));
+
+  // Timeframe buttons
+  document.querySelectorAll('.tf-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchInterval(btn.dataset.interval));
+  });
+
+  // Initial poll
+  pollAll();
+
+  // Auto-refresh
+  setInterval(pollAll, POLL_INTERVAL);
+});
+</script>
+</body>
+</html>

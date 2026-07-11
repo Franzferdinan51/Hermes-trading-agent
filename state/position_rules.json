@@ -54,7 +54,16 @@
        "allowed_tags": ["defi", "utility", "governance"],
        "note": "Jupiter Terminal scanner: top-traded + cooking feeds. Scans volume, liquidity, price momentum, new listings. Enable when ready."
      },
-    "action_on_trigger": "policy_review_then_execute_only_through_guard",
+     "macro_monitor": {
+       "enabled": false,
+       "fear_greed_threshold_low": 20,
+       "fear_greed_threshold_high": 85,
+       "btc_dump_alert_pct": -10,
+       "dxy_move_threshold_pct": 0.5,
+       "alert_on_high_impact_macro": true,
+       "note": "Macro intelligence: BTC price/dominance, Fear & Greed, DXY, S&P 500, VIX, Solana network health, crypto news, macro calendar. Enable when ready."
+     },
+     "action_on_trigger": "policy_review_then_execute_only_through_guard",
     "verified_wallet_nav_usd": 64.71,
     "verified_balances_snapshot": {
       "SOL": 0.411193067,

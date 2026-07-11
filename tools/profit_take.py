@@ -233,6 +233,56 @@ def _write_dynamic_entry(mint: str, thesis_id: str, max_notional: float, ttl: in
     d.write_entry(entry)
 
 
+def _allocate_profit(snapshot_before: dict, snapshot_after: dict, prices: dict, nav: float,
+                    rules: dict, wallet: str, execute: bool) -> list[dict]:
+    """Report the suggested 50/25/25 profit allocation after a profit-take.
+
+    Advisory only — reports what the split would be and whether the BTC leg
+    makes sense right now. The supervisor decides whether to act on it.
+    """
+    alloc_config = rules.get("global", {}).get("profit_allocation", {})
+    if not alloc_config:
+        return [{"action": "SKIP", "reason": "no profit_allocation config"}]
+
+    usdc_before = snapshot_before.get("token_raw_amounts", {}).get(USDC_MINT, 0) / 1e6
+    usdc_after = snapshot_after.get("token_raw_amounts", {}).get(USDC_MINT, 0) / 1e6
+    profit_usdc = usdc_after - usdc_before
+    if profit_usdc <= 0:
+        return [{"action": "SKIP", "reason": f"no profit realized (USDC delta {profit_usdc:.6f})"}]
+
+    usdc_pct = alloc_config.get("usdc_stable_pct", 50)
+    btc_pct = alloc_config.get("btc_pct", 25)
+    reinvest_pct = alloc_config.get("reinvest_pct", 25)
+    btc_trigger = float(alloc_config.get("btc_trigger_usdc_reserve", 50.0))
+    btc_mint = alloc_config.get("btc_target_mint", "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij")
+
+    usdc_keep = profit_usdc * (usdc_pct / 100.0)
+    btc_budget = profit_usdc * (btc_pct / 100.0)
+    reinvest_keep = profit_usdc * (reinvest_pct / 100.0)
+
+    results = [
+        {"action": "KEEP_USDC", "amount_usd": round(usdc_keep, 4), "pct": usdc_pct, "note": "stable reserve"},
+        {"action": "REINVEST_CAPITAL", "amount_usd": round(reinvest_keep, 4), "pct": reinvest_pct, "note": "dry powder"},
+    ]
+
+    btc_price = prices.get(btc_mint, 0)
+    btc_eligible = usdc_after > btc_trigger and btc_budget > 0.01 and btc_price > 0
+    if btc_eligible:
+        results.append({
+            "action": "SUGGEST_BTC",
+            "amount_usd": round(btc_budget, 4),
+            "pct": btc_pct,
+            "btc_price": btc_price,
+            "note": f"USDC ${usdc_after:.2f} > trigger ${btc_trigger}",
+        })
+    else:
+        reason = "no BTC price" if btc_price <= 0 else f"USDC ${usdc_after:.2f} <= trigger ${btc_trigger}"
+        results.append({"action": "SKIP_BTC", "reason": reason, "budget": round(btc_budget, 4)})
+
+    _log_event("ALLOC", f"advisory | profit=${profit_usdc:.6f} | usdc_keep=${usdc_keep:.4f} | reinvest=${reinvest_keep:.4f} | btc_budget=${btc_budget:.4f} | btc_eligible={btc_eligible}")
+    return results
+
+
 def _run_executor(wallet: str, in_mint: str, amount: int, notional_usd: float,
                   nav: float, slippage_bps: int, thesis_id: str) -> dict:
     max_loss = max(0.01, nav * MAX_RISK_PCT)
@@ -365,6 +415,7 @@ def main() -> int:
         }
         if args.execute:
             thesis_id = f"profit-take-{symbol.lower()}-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}"
+            snapshot_before_trade = dict(snapshot)
             try:
                 _write_dynamic_entry(mint, thesis_id, max_notional=notional * 1.2, ttl=21600)
             except Exception as exc:
@@ -378,6 +429,12 @@ def main() -> int:
             _log_event("EXEC" if result["exit_code"] == 0 else "FAIL",
                        f"{symbol} {action} slice={slice_pct*100:.0f}% amount={sell_human} "
                        f"price=${price} notional=${notional:.2f} edge=${net_edge:.4f}")
+            # Run profit allocation after a successful trade
+            if result["exit_code"] == 0:
+                snapshot_after_trade = _balances(wallet)
+                alloc_results = _allocate_profit(snapshot_before_trade, snapshot_after_trade,
+                                                 prices, nav, rules, wallet, True)
+                record["profit_allocation"] = alloc_results
         else:
             record["execution_status"] = "dry_run"
             _log_event("DRY", f"{symbol} {action} slice={slice_pct*100:.0f}% amount={sell_human} "

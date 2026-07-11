@@ -22,6 +22,16 @@
       "btc_target_mint": "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij",
       "note": "Advisory targets, not hard splits. After a profit-take, the supervisor reports what the suggested allocation would be and may act on it when edge, liquidity, and thesis quality support it. No forced buy."
     },
+    "perps": {
+      "enabled": false,
+      "max_leverage": 5,
+      "max_position_pct_nav": 0.10,
+      "liquidation_buffer": 1.2,
+      "allowed_markets": ["SOL-PERP", "BTC-PERP", "ETH-PERP"],
+      "auto_monitor": true,
+      "funding_threshold": 0.0001,
+      "note": "Perpetuals engine is DORMANT. Set enabled=true to activate. Requires Jupiter Perps SDK integration for live execution. Current markets: SOL-PERP, BTC-PERP, ETH-PERP via Jupiter Perps v1."
+    },
     "action_on_trigger": "policy_review_then_execute_only_through_guard",
     "verified_wallet_nav_usd": 64.71,
     "verified_balances_snapshot": {

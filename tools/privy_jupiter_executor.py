@@ -2,18 +2,8 @@
 """Bounded Privy + Jupiter Solana executor.
 
 Default mode is dry-run: quote and preflight only.  --execute is required to
-request a signer signature and broadcast.  This tool never withdraws, sweeps,
+request a Privy signature and broadcast.  This tool never withdraws, sweeps,
 or calls arbitrary programs; it only accepts an explicit allowlist of spot mints.
-
-CONFIGURATION:
-  1. Replace `EXAMPLE_WALLET` below with your own Solana public address.
-  2. Configure `PRIVY_SIGN` / `PRIVY_SIGN_KWARGS` for your signer (Privy,
-     Turnkey, Openfort, Phantom, etc.). The signer must return a base64
-     encoded signed transaction.
-  3. Edit `ALLOWLIST` to add the mints you want to trade. The five defaults
-     below are the public Jupiter reference mints.
-  4. Add per-mint dynamic entries via `tools/dynamic_allowlist.py` for any
-     opportunistic trades that aren't in your core allowlist.
 """
 from __future__ import annotations
 
@@ -32,9 +22,6 @@ from solders.transaction import VersionedTransaction
 
 from policy_engine import HALT, PolicyError, halt, preflight, trade_lock
 
-# Replace this with your own Privy agent Solana wallet public address before use.
-EXAMPLE_WALLET = "<YOUR_PRIVY_SOLANA_WALLET>"
-
 ROOT = Path(__file__).resolve().parent.parent
 LEDGER = ROOT / "logs" / "trade_ledger.jsonl"
 THESIS = ROOT / "state" / "position_theses.json"
@@ -42,11 +29,6 @@ RPC = "https://api.mainnet-beta.solana.com"
 QUOTE_URL = "https://lite-api.jup.ag/swap/v1/quote"
 SWAP_URL = "https://lite-api.jup.ag/swap/v1/swap"
 PRIVY = ["pnpm", "--package=@privy-io/agent-wallet-cli", "dlx", "privy-agent-wallet", "rpc"]
-# PRIVY is the CLI call shape used by the original operator. If you use a different
-# signer (Turnkey, Openfort, Phantom, etc.), replace PRIVY_SIGN and PRIVY_SIGN_KWARGS
-# below with the equivalent command that returns a base64-encoded signed transaction.
-PRIVY_SIGN = None  # e.g. ["turnkey", "sign", "--transaction", "{tx_b64}"]
-PRIVY_SIGN_KWARGS = {"input": "{tx_b64}"}  # populated by privy_sign()
 SOL = "So11111111111111111111111111111111111111112"
 USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
 JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
@@ -115,7 +97,17 @@ def balances(address: str) -> dict:
 
 
 def speculative_buy_allowed(mint: str) -> bool:
-    return False  # speculative buys require explicit per-mint enablement
+    """Allow a speculative buy only with a fresh supervisor-created entry.
+
+    The entry must explicitly use ``intent=speculation_buy`` and is single-use
+    with a short TTL.  No entry means buys remain disabled.
+    """
+    try:
+        from dynamic_allowlist import entry_for
+        entry = entry_for(mint)
+    except ImportError:
+        return False
+    return bool(entry and entry.get("intent") == "speculation_buy")
 
 
 def speculative_exit_only(mint: str) -> bool:

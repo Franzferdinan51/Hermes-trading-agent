@@ -2,7 +2,7 @@
 
 **Canonical operational status:** 2026-07-11 13:45 EDT  
 **Active scope:** isolated Privy Solana wallet + Jupiter only  
-**Wallet:** `<YOUR_PRIVY_SOLANA_WALLET>`
+**Wallet:** `<SOLANA_WALLET_ADDRESS>`
 
 This document is the current operational source of truth. Older Cosmos/Osmosis and Keplr material remains historical/reference unless the owner explicitly reactivates it.
 
@@ -42,7 +42,7 @@ Every reconciliation must query both classic SPL Token and Token-2022.
 
 ```bash
 python3 tools/privy_jupiter_executor.py \
-  --wallet <YOUR_PRIVY_SOLANA_WALLET> \
+  --wallet <SOLANA_WALLET_ADDRESS> \
   --thesis-id <STABLE_THESIS_OR_KANBAN_ID> \
   --input-mint <EXACT_MINT> \
   --output-mint <EXACT_MINT> \
@@ -149,4 +149,6 @@ Safe executor test: run the command in section 3 without `--execute`. Never use 
 - Staking (JupSOL), LP/JLP, prediction markets, tokenized assets, bridges, Base, and perps do not have a generic bounded executor and remain research-only unless a separate verified path is built.
 - Realized daily P&L and two-loss counting are policy requirements but need reliable closed-position accounting before they can be derived automatically; the supervisor must not invent them.
 - Jupiter/Privy/external endpoints can fail or change. Preserve errors verbatim and HOLD on stale or conflicting data.
+- Live on-chain reconciliation is authoritative; historical snapshots in evidence files must not be used as current balances. If `state/position_rules.json`, `state/position_theses.json`, ledger, and RPC disagree, the supervisor must reconcile from both SPL token programs and native SOL before considering any Ready card. Stale or conflicting state is a HOLD condition.
 - Dashboard Kanban and markdown Kanban are separate; both must be checked to avoid stranded Ready work.
+- Cross-platform coordination is defined in `docs/MULTI_PLATFORM_PROTOCOL.md` and `state/platforms.json`. The supervisor may compare platform opportunities, but each platform retains its own signer/executor; Base remains disabled until its funding and verification gates pass.

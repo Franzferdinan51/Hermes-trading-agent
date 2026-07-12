@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "cross_management": {
+    "enabled": true,
+    "mode": "read_only_until_platform_executor_verified",
+    "rules": [
+      "Each platform keeps its own signer and policy scope.",
+      "Cross-platform comparison is allowed; cross-chain transfer is not implied.",
+      "A transfer or bridge requires its own route, recipient, fee, finality, and recovery gate.",
+      "Global portfolio limits apply across all platforms.",
+      "Platform-local limits may be stricter than global limits."
+    ]
+  },
+  "platforms": {
+    "jupiter_solana": {
+      "status": "active",
+      "chain": "solana",
+      "wallet": "<SOLANA_WALLET_ADDRESS>",
+      "signer": "privy",
+      "executor": "tools/privy_jupiter_executor.py",
+      "mode": "bounded_spot",
+      "enabled_for_execution": true,
+      "native_fee_asset": "SOL"
+    },
+    "coinbase_base": {
+      "status": "configured_unfunded",
+      "chain": "base",
+      "chain_id": 8453,
+      "wallet": "<BASE_WALLET_ADDRESS>",
+      "signer": "coinbase_cdp",
+      "executor": "npx awal trade",
+      "mode": "bounded_spot_pending_policy",
+      "enabled_for_execution": false,
+      "native_fee_asset": "ETH",
+      "supported_initial_assets": ["ETH", "USDC"],
+      "reason_disabled": "Awaiting funding, live balance verification, platform policy, and a tested transaction path."
+    }
+  },
+  "global_policy": {
+    "max_total_risk_pct_nav": 1.0,
+    "max_daily_realized_loss_pct_nav": 2.0,
+    "require_current_balance_reconciliation": true,
+    "require_exact_asset_identity": true,
+    "require_independent_post_trade_verification": true,
+    "allow_autonomous_withdrawals": false,
+    "allow_autonomous_bridges": false,
+    "allow_arbitrary_contract_calls": false
+  }
+}

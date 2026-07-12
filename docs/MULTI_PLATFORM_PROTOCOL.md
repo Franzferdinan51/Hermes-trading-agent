@@ -14,6 +14,21 @@ The canonical registry is:
 state/platforms.json
 ```
 
+The read-only wrapper is:
+
+```text
+tools/platform_orchestrator.py
+```
+
+Invoke it through the `terminal` tool:
+
+```text
+python3 tools/platform_orchestrator.py snapshot
+python3 tools/platform_orchestrator.py evaluate <candidate-json>
+```
+
+The wrapper loads the registry, produces normalized dashboard-ready state, applies the MoA decision gate, and forces HOLD when the selected platform is not execution-enabled. It never signs, broadcasts, bridges, withdraws, or changes wallet permissions.
+
 The read-only registry tool is:
 
 ```text

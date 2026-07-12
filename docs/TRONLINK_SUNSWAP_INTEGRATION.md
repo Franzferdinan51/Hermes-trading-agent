@@ -24,6 +24,23 @@ sunswap_tron   = planned_disabled
 
 No wallet connection, private-key export, transaction signing, or swap was attempted.
 
+## MCP integrations
+
+TronLink provides official MCP options:
+
+- `mcp-tronlink-signer` via stdio: `claude mcp add -s user tronlink-signer -- npx mcp-tronlink-signer`
+- `mcp-server-tronlink`, which exposes read/query and TRON operations, including SunSwap V2/V3 swap capabilities.
+
+The signer tools include `connect_wallet`, `get_balance`, `send_trx`, `send_trc20`, and `sign_transaction`. Signing opens a TronLink approval page; private keys never leave the wallet. Broadcast outcomes must be reconciled before any retry.
+
+SUN.io provides an official SUN MCP Server for SunSwap:
+
+```text
+https://sun-mcp-server.bankofai.io/mcp
+```
+
+Its cloud service is read-only and requires no wallet. Writes require a local private deployment according to the SUN.io documentation. Keep the cloud MCP read-only and use TronLink’s approval-bound signer for any eventual write path.
+
 ## Required implementation gates
 
 1. Detect TronLink and verify the selected TRON network.

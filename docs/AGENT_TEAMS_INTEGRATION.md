@@ -26,7 +26,7 @@ Platform-local executor
 - **MoA:** advisory references run in parallel; aggregator synthesizes.
 - **Council:** use adversarial debate and confidence scoring for material or ambiguous decisions.
 - **Swarm:** use parallel task decomposition for research, simulation, and verification.
-- **Presets:** maintain named configurations such as `default`, `security`, and `execution-review`.
+- **Budget caps:** trading MoA presets use 4 reference agents by default, 5 maximum for cross-platform review, bounded concurrency, and explicit reference/aggregator token budgets. Do not import the Agent-Teams 49-council pattern into trading execution.
 - **Non-fatal references:** one failed model must not kill the review; record the failure and lower confidence.
 - **Tool boundary:** reference agents are read-only; only the aggregator can call tools, and only the platform adapter can sign.
 - **Auditability:** preserve reference outputs, votes, consensus score, aggregator decision, policy result, and final verification.

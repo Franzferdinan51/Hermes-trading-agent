@@ -26,7 +26,11 @@ def decide(candidate: dict, votes: list[dict], preset: str = "default") -> dict:
     confidences = [float(v.get("confidence", 0)) for v in votes]
     score = round(sum(confidences) / len(confidences) * 10, 2) if confidences else 0.0
     required = set(cfg["references"])
+    if len(required) > int(cfg["max_references"]):
+        raise ValueError("preset exceeds max reference-agent budget")
     present = {v.get("role") for v in votes}
+    if len(votes) > int(cfg["max_references"]):
+        raise ValueError("vote set exceeds max reference-agent budget")
     complete = required.issubset(present)
     approved = not stops & HARD_STOPS and complete and len(passed) >= cfg["min_pass_votes"] and score >= cfg["min_consensus_score"]
     return {

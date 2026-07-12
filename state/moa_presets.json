@@ -2,21 +2,37 @@
   "presets": {
     "default": {
       "references": ["market", "portfolio", "protocol", "execution"],
+      "max_references": 4,
+      "max_concurrency": 4,
+      "reference_token_budget": 700,
+      "aggregator_token_budget": 1000,
       "min_pass_votes": 4,
       "min_consensus_score": 75
     },
     "security": {
       "references": ["protocol", "execution", "portfolio", "market"],
+      "max_references": 4,
+      "max_concurrency": 4,
+      "reference_token_budget": 600,
+      "aggregator_token_budget": 1000,
       "min_pass_votes": 4,
       "min_consensus_score": 85
     },
     "execution-review": {
       "references": ["execution", "portfolio", "protocol", "market"],
+      "max_references": 4,
+      "max_concurrency": 4,
+      "reference_token_budget": 500,
+      "aggregator_token_budget": 800,
       "min_pass_votes": 4,
       "min_consensus_score": 90
     },
     "cross-platform": {
       "references": ["market", "portfolio", "protocol", "execution", "transfer"],
+      "max_references": 5,
+      "max_concurrency": 5,
+      "reference_token_budget": 600,
+      "aggregator_token_budget": 1000,
       "min_pass_votes": 5,
       "min_consensus_score": 90
     }

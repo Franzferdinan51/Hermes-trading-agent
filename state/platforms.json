@@ -60,6 +60,15 @@
         "Require positive risk-adjusted net edge, current balance reconciliation, and supervisor authorization.",
         "Permit2 approval, if required, must be exact amount and independently finalized before swap.",
         "No automatic retry after any broadcast; verify receipt and post-trade balances independently."
+      ],
+      "evm_owner_account": "0x1dEe668CcA7440FDa4E9BdabD486cb7335A7a796",
+      "evm_smart_account": "0xAaa776e26fB11aAFa59F591333161a1D6adD0B61",
+      "smart_account_status": "created_unfunded_not_execution_enabled",
+      "smart_account_capabilities": [
+        "ERC-4337 user operations",
+        "batched transactions",
+        "optional paymaster gas sponsorship",
+        "spend permissions pending policy"
       ]
     },
     "aerodrome_base": {

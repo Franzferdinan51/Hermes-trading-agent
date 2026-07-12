@@ -16,7 +16,7 @@ owner has approved.
 - **Active:** Solana via Jupiter aggregator (spot swaps, JL-USDC Earn deposits/withdrawals,
   dynamic-allowlist opportunistic trades).
 - **Active:** Base via Coinbase CDP (bounded USDC/WETH swaps using the official CDP SDK).
-- **Research-only:** Aerodrome Base routing and Avantis Base perpetuals until their adapters and risk gates are verified.
+- **Preferred research/quote venue:** PancakeSwap on Base and Solana; all PancakeSwap execution remains disabled pending verified adapters and risk gates. Aerodrome is explicitly not selected. Avantis Base perpetuals remain research-only.
 - **Legacy (do not use):** Keplr / Cosmos / Osmosis workflows are preserved under
   `legacy/` for the historical record only. They are explicitly deprecated and ignored
   by the active code path.

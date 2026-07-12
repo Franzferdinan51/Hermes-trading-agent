@@ -2,6 +2,10 @@
 
 **Status:** additive cross-management layer; Jupiter/Solana remains active, Coinbase/Base is configured but execution-disabled until funded and verified.
 
+## Profitability-first objective
+
+The system optimizes for **risk-adjusted net profitability**, not trade frequency or infrastructure activity. Every candidate must show a verified positive expected net edge after all trading fees, spread, slippage, gas, funding, borrow/yield costs, transfer costs, liquidity impact, and failure-to-fill risk. Position size is determined by downside, liquidity, and confidence—not available balance. Spot and repeatable edges are preferred before leverage, LP, lending, and perps. A no-edge result must be reported as **HOLD**; agents must never manufacture trades to remain active. Every promoted candidate includes gross edge, all-in cost, net edge, confidence, size, downside, invalidation, and Ready/Watch/Skip status.
+
 ## Purpose
 
 This protocol gives the supervisor one portfolio view across multiple platforms without merging private keys or assuming that assets on different chains are interchangeable. It provides a common lifecycle for discovery, reconciliation, thesis review, platform-local execution, and independent verification.

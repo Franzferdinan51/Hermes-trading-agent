@@ -220,7 +220,7 @@ def build_swap(q: dict, wallet: str) -> tuple[dict, dict, dict]:
     swap = http_json(SWAP_URL, method="POST", body={
         "quoteResponse": q,
         "userPublicKey": wallet,
-        "asLegacyTransaction": True,
+        "asLegacyTransaction": False,
         "dynamicComputeUnitLimit": True,
         "prioritizationFeeLamports": "auto",
     })

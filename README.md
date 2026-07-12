@@ -14,18 +14,43 @@ owner has approved.
 ## Scope
 
 - **Active:** Solana via Jupiter aggregator (spot swaps, JL-USDC Earn deposits/withdrawals,
-  dynamic-allowlist opportunistic trades). Use this.
+  dynamic-allowlist opportunistic trades).
+- **Active:** Base via Coinbase CDP (bounded USDC/WETH swaps using the official CDP SDK).
+- **Research-only:** Aerodrome Base routing and Avantis Base perpetuals until their adapters and risk gates are verified.
 - **Legacy (do not use):** Keplr / Cosmos / Osmosis workflows are preserved under
   `legacy/` for the historical record only. They are explicitly deprecated and ignored
   by the active code path.
 
-## What's in here
+## Profitability and portfolio buckets
+
+The operating objective is risk-adjusted profitability, not trade frequency. Candidates must show positive expected net edge after fees, spread, slippage, gas, funding, liquidity impact, transfer costs, and opportunity cost. A clean **HOLD** is preferable to a forced trade.
+
+Capital is managed by bucket:
+
+- **Treasury/stable reserve:** operational liquidity and fee runway.
+- **Short-term/day trading:** current catalyst or repeatable edge, explicit exit and time stop.
+- **Long-term/core:** thesis, target, invalidation, tokenomics, and concentration review.
+- **Long-term staking:** JupSOL-style yield versus depeg, validator, liquidity, and contract risk.
+- **Long-term earn/yield:** JL-USDC-style APY versus withdrawal, smart-contract, oracle, borrower, and depeg risk.
+- **Yield watchlist:** researched but unheld products such as JLP.
+- **Speculative:** capped exact-mint positions with security/liquidity review, time stop, and no averaging down.
+- **Dormant strategies:** perps, predictions, scanners, LP, and other modules require separate enablement.
+
+Transfers between buckets require a documented source, destination, reason, costs, and updated exposure.
+
+## Scheduled trading workflow
+
+The active Hermes scheduler includes market/research collectors, three day-trading collectors, portfolio/risk management, an hourly sell/exit evaluator, a daily canonical profit sweep, reconciliation/health checks, and one autonomous portfolio supervisor. The supervisor consumes those outputs and is the only layer that may authorize a bounded executor action.
+
+The sell/exit evaluator classifies positions as `HOLD`, `WATCH`, `SELL-READY`, or `URGENT-EXIT` by checking targets, invalidations, time stops, liquidity, reverse quotes, and all-in net outcome. Profit sweeps are also subject to bucket-aware profitability and reserve gates.
+
 
 ### Active (use this)
 
 | Path | Purpose |
 |------|---------|
 | `tools/privy_jupiter_executor.py` | The bounded executor. Hard-coded mint allowlist, dynamic per-mint runtime allowlist, transaction decoding, simulation, fee-payer check, Jupiter-router enforcement, minimum-output verification, post-trade balance reconciliation, single-use consumption of dynamic entries. |
+| `tools/cdp_base_executor.mjs` | Official Coinbase CDP SDK Base executor. Dry-run by default, USDC→WETH allowlist, Permit2 approval handling, gas precheck, slippage/notional caps, idempotency, receipt and balance verification. |
 | `tools/policy_engine.py` | The preflight guard. Numeric validation, quote-age cap, price-impact cap, slippage cap, notional/risk ratios (sourced from `state/position_rules.json`), one-trade filesystem lock, emergency-stop marker. |
 | `tools/dynamic_allowlist.py` | Runtime per-mint allowlist managed by the supervisor. TTL cap, per-mint notional cap, mandatory Token-2022 extension report, single-use consumption, kill switch. |
 | `tools/dynamic_allowlist_cli.py` | Operator CLI for the dynamic allowlist (`halt`, `resume`, `status`, `list`, `show`, `purge-expired`). |

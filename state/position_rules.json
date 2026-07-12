@@ -24,6 +24,7 @@
     },
     "perps": {
       "enabled": false,
+      "strategy_authorized": true,
       "max_leverage": 5,
       "max_position_pct_nav": 0.10,
       "liquidation_buffer": 1.2,
@@ -34,6 +35,7 @@
     },
      "predictions": {
        "enabled": false,
+       "strategy_authorized": true,
        "max_position_pct_nav": 0.02,
        "max_total_pct_nav": 0.05,
        "min_edge_bps": 200,

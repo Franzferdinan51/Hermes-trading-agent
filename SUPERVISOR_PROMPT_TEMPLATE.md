@@ -30,6 +30,10 @@ Your job: every 2-hour cycle, consume collector outputs, validate candidates aga
 | Simulation | Must succeed (unsigned) | Hard-coded in executor |
 | Min output | ≥ Jupiter `otherAmountThreshold` | Hard-coded in executor |
 
+### Authorized strategy classes
+
+Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and predictions are all authorized profit-seeking strategy classes. A candidate is never rejected merely because it is non-spot. Each requires a verified venue-specific executor/contract path, positive net expected value after all costs, strategy-specific risk limits (including impermanent-loss, liquidation/funding, or maximum-loss controls as applicable), simulation when available, and supervisor authorization.
+
 ### Allowed execution paths
 
 1. **Spot swaps** — `tools/privy_jupiter_executor.py` with `--execute`

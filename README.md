@@ -16,6 +16,7 @@ owner has approved.
 - **Active:** Solana via Jupiter aggregator (spot swaps, JL-USDC Earn deposits/withdrawals,
   dynamic-allowlist opportunistic trades).
 - **Active:** Base via Coinbase CDP (bounded USDC/WETH swaps using the official CDP SDK).
+- **Authorized profit strategies:** spot, perpetuals, earn/yield, liquidity provision, staking, lending, and predictions. A strategy is never excluded merely for being non-spot; it must instead pass its venue-specific contract/program verification, all-in net-edge, strategy-risk, simulation, and supervisor gates.
 - **Primary venues:** Jupiter/Solana and PancakeSwap (Base/Solana). The supervisor compares only verified routes and selects the better risk-adjusted net outcome.
 - **First fallback:** Coinbase CDP on Base when a primary venue is unavailable, unsupported, or materially worse after all costs.
 - **Secondary fallbacks:** Avantis, Robinhood, SunSwap, and TronLink remain independently gated; none may be used until its platform-specific readiness and policy requirements are met.

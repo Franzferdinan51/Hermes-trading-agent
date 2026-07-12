@@ -62,8 +62,17 @@ The sell/exit evaluator classifies positions as `HOLD`, `WATCH`, `SELL-READY`, o
 | `tools/performance_report.py` | Validates finalized ledger records. |
 | `tools/sync_state.py` | State snapshot helper for post-trade updates. |
 | `tools/smoke-test-policy-guard.py` | Isolated policy-guard smoke test (no production state touched). |
+| `tools/dashboard/app.py` | Local read-only web trading terminal server with portfolio, macro, market, chart, news, alerts, and health endpoints. |
+| `tools/dashboard/templates/index.html` | Trading terminal UI with portfolio, P&L, macro, market, chart, news, and alert panels. |
+| `tools/dashboard/data_fetcher.py` | Dashboard data layer with graceful API degradation; live reconciliation remains authoritative over dashboard fallback values. |
+| `tools/dashboard/docker-compose.yml` | Local dashboard container definition. |
+| `tools/dashboard/Dockerfile` | Dashboard image definition. |
+| `tools/dashboard/requirements.txt` | Dashboard Python dependencies. |
 | `state/position_rules.json` | Tunable active cap, per-trade ratio, fee reserve, loss caps, risk ratios, speculation rules. |
 | `state/position_theses.json` | Per-asset rationale, target, invalidation, time horizon, yield plan, risk notes. |
+| `buy-evaluation` skill | Hermes pre-buy decision procedure: `BUY`, `DO NOT BUY`, or `RESEARCH MORE`. |
+| `wallet-portfolio-briefing` skill | Verified multi-wallet briefing procedure with mandatory live CDP token listing. |
+
 | `tests/` | Regression tests for the policy guard, executor, and dynamic allowlist. |
 | `docs/CURRENT_JUPITER_OPERATIONS.md` | Live operational source of truth. |
 | `docs/JUPITER_STACK_AUDIT_2026-07-11.md` | Most recent comprehensive audit. |
@@ -191,6 +200,14 @@ python3 tools/profit_take.py
 # Execute with allocation advisory
 python3 tools/profit_take.py --execute --slice-pct 33
 ```
+
+## Dashboard and runtime wrappers
+
+The GitHub repository includes the read-only web trading terminal under `tools/dashboard/`. Start it locally with the dashboard's Docker Compose definition or the Flask entry point; it exposes portfolio, macro, market, chart, news, alerts, and health endpoints.
+
+Hermes scheduler definitions and machine-specific wrapper scripts live under `~/.hermes/cron/` and are intentionally not copied into this repository. They may contain local paths, profile-specific settings, and runtime integration details. Runtime `evidence/`, `logs/`, and dashboard fallback data must not be treated as authoritative over live reconciliation.
+
+The dashboard is an observability surface, not an execution authority. Buys and other position changes must go through the buy-evaluation gate, supervisor authorization, platform-local executor, simulation, and post-trade reconciliation.
 
 ## What this does NOT do
 

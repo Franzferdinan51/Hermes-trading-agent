@@ -73,7 +73,8 @@ Jupiter and Coinbase keep separate wallets, asset identities, fee reserves, poli
 - Global maximum realized daily loss: 2% of verified NAV.
 - Require current balance reconciliation before every action.
 - Require exact asset identity; symbols are insufficient.
-- No autonomous withdrawals, treasury sweeps, bridges, or arbitrary contract calls.
+- No autonomous withdrawals or arbitrary contract calls.
+- Autonomous bridging is permitted only through a separately verified, explicitly allowlisted bridge route with exact source/destination wallets, asset mapping, simulation where available, finality monitoring, positive net-edge gate, supervisor authorization, and independent destination reconciliation.
 - Cross-platform arbitrage must remain positive after trading fees, transfer/bridge costs, spread, slippage, latency, inventory, settlement, depeg, and failure-to-fill risk.
 - A platform with stale or conflicting data is HOLD/BLOCKED, not eligible for execution.
 - Platform-local policy can be stricter than the global policy.

@@ -101,7 +101,7 @@
       "quote_enabled": true
     },
     "pancakeswap_solana": {
-      "status": "preferred_read_only_spot_and_earn_venue",
+      "status": "read_only_enabled_execution_pending_adapter",
       "chain": "solana",
       "protocol": "pancakeswap",
       "venue_type": "spot_and_liquidity_dex",
@@ -210,7 +210,8 @@
     "require_exact_asset_identity": true,
     "require_independent_post_trade_verification": true,
     "allow_autonomous_withdrawals": false,
-    "allow_autonomous_bridges": false,
+    "allow_autonomous_bridges": true,
+    "bridge_policy": "Permission granted only for explicitly allowlisted source/destination wallets, exact chain and asset mappings, verified bridge route, positive net edge after all costs, simulation where available, supervisor authorization, finality monitoring, and independent destination reconciliation. No generic bridge or arbitrary contract calls.",
     "allow_arbitrary_contract_calls": false
   }
 }

@@ -23,7 +23,7 @@
       "native_fee_asset": "SOL"
     },
     "coinbase_base": {
-      "status": "configured_unfunded",
+      "status": "funded_readiness_verified",
       "chain": "base",
       "chain_id": 8453,
       "wallet": "<BASE_WALLET_ADDRESS>",
@@ -33,7 +33,7 @@
       "enabled_for_execution": false,
       "native_fee_asset": "ETH",
       "supported_initial_assets": ["ETH", "USDC"],
-      "reason_disabled": "Awaiting funding, live balance verification, platform policy, and a tested transaction path."
+      "reason_disabled": "Funded with verified Base USDC; awaiting a specific authorized trade, final policy review, and independent post-trade verification."
     },
     "robinhood_agentic": {
       "status": "mcp_configured_disabled",

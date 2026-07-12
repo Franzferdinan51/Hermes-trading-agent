@@ -34,6 +34,18 @@
       "native_fee_asset": "ETH",
       "supported_initial_assets": ["ETH", "USDC"],
       "reason_disabled": "Awaiting funding, live balance verification, platform policy, and a tested transaction path."
+    },
+    "robinhood_agentic": {
+      "status": "mcp_configured_disabled",
+      "venue": "robinhood",
+      "product": "agentic_trading_account",
+      "transport": "streamable_http_mcp",
+      "mcp_endpoint": "https://agent.robinhood.com/mcp/trading",
+      "signer": "robinhood_agentic_account",
+      "executor": "robinhood_trading_mcp",
+      "mode": "read_only_pending_desktop_auth",
+      "enabled_for_execution": false,
+      "reason_disabled": "MCP endpoint is configured but requires Robinhood desktop authentication and dedicated Agentic account onboarding."
     }
   },
   "global_policy": {

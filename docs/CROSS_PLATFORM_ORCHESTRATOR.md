@@ -21,6 +21,7 @@ The same bounded workers review every platform and chain:
 - `protocol`
 - `execution`
 - `transfer` when cross-platform movement is proposed
+- `derivatives` only for perpetuals/options-style candidates
 
 Workers consume the normalized candidate contract and return the same vote schema regardless of venue. They do not become platform-specific agents and they do not receive signer access.
 

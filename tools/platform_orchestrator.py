@@ -35,7 +35,7 @@ def snapshot() -> dict:
         "platforms": reg["platforms"],
         "global_policy": reg["global_policy"],
         "model_routing": json.loads(MODEL_ROUTING.read_text()),
-        "shared_worker_pool": ["market", "portfolio", "protocol", "execution", "transfer"],
+        "shared_worker_pool": ["market", "portfolio", "protocol", "execution", "transfer", "derivatives"],
         "handoff": {
             "moa": "tools/moa_decision.py",
             "platform_registry": "state/platforms.json",

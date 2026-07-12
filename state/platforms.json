@@ -35,6 +35,21 @@
       "supported_initial_assets": ["ETH", "USDC"],
       "reason_disabled": "Funded with verified Base USDC; awaiting a specific authorized trade, final policy review, and independent post-trade verification."
     },
+    "avantis_base": {
+      "status": "research_only_disabled",
+      "chain": "base",
+      "protocol": "avantis",
+      "venue_type": "perpetuals_dex",
+      "collateral": "USDC",
+      "data_endpoints": ["https://data.avantisfi.com", "https://core.avantisfi.com", "https://api.avantisfi.com"],
+      "tx_builder": "https://tx-builder.avantisfi.com",
+      "wallet_adapter": "coinbase_base",
+      "signer": "coinbase_cdp",
+      "executor": "pending_avantis_adapter",
+      "mode": "research_only_no_leverage",
+      "enabled_for_execution": false,
+      "reason_disabled": "Requires dedicated perps risk policy, leverage cap, liquidation/mark-price checks, funding and fee modeling, unsigned calldata review, and independent post-trade verification."
+    },
     "robinhood_agentic": {
       "status": "mcp_configured_disabled",
       "venue": "robinhood",

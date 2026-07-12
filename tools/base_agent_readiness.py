@@ -39,13 +39,32 @@ def rpc(method: str, params: list) -> dict:
         return json.loads(response.read())
 
 
+def configured_base_address() -> str:
+    """Return the explicit env address or the registered public Base wallet address."""
+    explicit = os.getenv("BASE_AGENT_ADDRESS", "").strip()
+    if explicit:
+        return explicit
+    for candidate in (
+        Path(__file__).resolve().parents[1] / "state" / "platforms.json",
+        Path("state/platforms.json"),
+    ):
+        try:
+            data = json.loads(candidate.read_text())
+            address = data.get("platforms", {}).get("coinbase_base", {}).get("wallet", "")
+            if isinstance(address, str) and address.startswith("0x") and len(address) == 42:
+                return address
+        except (OSError, ValueError, TypeError):
+            continue
+    return ""
+
+
 def main() -> int:
     present = {
         "CDP_API_KEY_FILE": cdp_file_ready(),
         "CDP_API_KEY_ID": bool(os.getenv("CDP_API_KEY_ID")),
         "CDP_API_KEY_SECRET": bool(os.getenv("CDP_API_KEY_SECRET")),
         "CDP_WALLET_SECRET": bool(os.getenv("CDP_WALLET_SECRET")),
-        "BASE_AGENT_ADDRESS": bool(os.getenv("BASE_AGENT_ADDRESS")),
+        "BASE_AGENT_ADDRESS": bool(configured_base_address()),
     }
     print("Coinbase CDP/Base readiness")
     print("credentials_present:", present)

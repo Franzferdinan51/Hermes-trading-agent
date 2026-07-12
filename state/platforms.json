@@ -194,7 +194,7 @@
     }
   },
   "global_policy": {
-    "strategy_mandate": "Profit-seeking strategies are authorized across spot, perpetuals, earn/yield, predictions, liquidity provision, staking, and lending. No strategy class is excluded merely because it is not spot; each action still requires verified platform support, contract/program allowlisting, current reconciliation, positive risk-adjusted net edge, strategy-specific risk limits, simulation where applicable, supervisor authorization, and independent verification.",
+    "strategy_mandate": "Profit-seeking strategies are authorized across spot, perpetuals, earn/yield, predictions, liquidity provision, staking, and lending. No strategy class is excluded merely because it is not spot; each action still requires verified platform support, contract/program allowlisting, current reconciliation, positive risk-adjusted net edge, strategy-specific risk limits, simulation where applicable, supervisor authorization, and independent verification. Mandatory pre-buy research applies to every coin, token, and tokenized asset before any buy consideration.",
     "authorized_strategy_classes": [
       "spot",
       "perpetuals",

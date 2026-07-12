@@ -65,14 +65,17 @@ Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and p
    - If mismatch > 0.5% NAV → HOLD, alert, do not trade
 
 3. SCAN OPPORTUNITIES
-   a) Profit-take scan (`tools/profit_take.py --dry-run`)
+   a) Buy-entry gate (`buy-evaluation` / mandatory pre-buy research)
+      - Never promote a buy unless exact asset identity, legitimacy, liquidity, costs, exit path, jurisdiction/compliance, and positive expected net edge are verified
+      - Unknown, illiquid, speculative, or unverified assets default to RESEARCH MORE or DO NOT BUY
+   b) Profit-take scan (`tools/profit_take.py --dry-run`)
       - Any position ≥ target_review_usd → TAKE_PROFIT (33% slice default)
       - Any position ≤ invalidation_review_usd → EXIT (100%)
-   b) Stable arb scan (`tools/stable_arb.py --dry-run`)
+   c) Stable arb scan (`tools/stable_arb.py --dry-run`)
       - USDC/USDT/USDS/PYUSD/EURC round-trips ≥ 5 bps net edge
-   c) Prediction scan (`tools/predictions_engine.py --filter`)
+   d) Prediction scan (`tools/predictions_engine.py --filter`)
       - Jupiter Terminal markets with edge ≥ 200 bps vs external prob
-   d) Perps scan (if perps enabled)
+   e) Perps scan (if perps enabled)
       - Funding rate carry, basis trade, hedge
 
 4. VALIDATE EACH CANDIDATE

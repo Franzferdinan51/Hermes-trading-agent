@@ -17,6 +17,7 @@ This document is the current operational source of truth. Older Cosmos/Osmosis a
 - Dynamic allowlist controls: per-mint notional cap from the supervisor entry, max 6h TTL by default (24h hard cap), single-use consumption on successful trade, kill switch via `python3 tools/dynamic_allowlist_cli.py halt <reason>`.
 - Prohibited: withdrawals, treasury sweeps, arbitrary contracts, unknown mints/programs, and unverified bridges; verified allowlisted bridge routes require the global transfer policy, exact source/destination checks, positive net edge, finality, supervisor authorization, and reconciliation. Leverage/perps, wallet-permission changes, and legacy custom signers remain prohibited.
 - Non-spot products such as Earn/Lend/Stake/LP/JLP/predictions/tokenized assets require feature-specific research and risk gates. Current held JL-USDC is monitored; the generic spot executor does not automate deposits or withdrawals.
+- Mandatory pre-buy research applies to every coin, token, and tokenized asset before any buy consideration: exact identity, legitimacy, liquidity, costs, exit path, jurisdiction/compliance, and expected net edge must be verified first.
 - Small speculative coins are allowed in a separate speculation bucket. Default limits are 2% of verified NAV per speculative position and 5% aggregate speculative exposure, further constrained by the 3% NAV maximum-total-risk rule.
 ## 2. Exact asset identity
 

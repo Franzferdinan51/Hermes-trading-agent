@@ -1,0 +1,24 @@
+{
+  "presets": {
+    "default": {
+      "references": ["market", "portfolio", "protocol", "execution"],
+      "min_pass_votes": 4,
+      "min_consensus_score": 75
+    },
+    "security": {
+      "references": ["protocol", "execution", "portfolio", "market"],
+      "min_pass_votes": 4,
+      "min_consensus_score": 85
+    },
+    "execution-review": {
+      "references": ["execution", "portfolio", "protocol", "market"],
+      "min_pass_votes": 4,
+      "min_consensus_score": 90
+    },
+    "cross-platform": {
+      "references": ["market", "portfolio", "protocol", "execution", "transfer"],
+      "min_pass_votes": 5,
+      "min_consensus_score": 90
+    }
+  }
+}

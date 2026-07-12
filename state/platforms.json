@@ -46,6 +46,30 @@
       "mode": "read_only_pending_desktop_auth",
       "enabled_for_execution": false,
       "reason_disabled": "MCP endpoint is configured but requires Robinhood desktop authentication and dedicated Agentic account onboarding."
+    },
+    "tronlink_tron": {
+      "status": "planned_disabled",
+      "chain": "tron",
+      "wallet": null,
+      "signer": "tronlink_local_approval",
+      "executor": "pending_tronlink_adapter",
+      "mode": "bounded_spot_pending_wallet_connection",
+      "enabled_for_execution": false,
+      "native_fee_asset": "TRX",
+      "reason_disabled": "Requires verified TronLink connection, local user approval, supported network detection, and read-only balance verification."
+    },
+    "sunswap_tron": {
+      "status": "planned_disabled",
+      "chain": "tron",
+      "protocol": "sunswap",
+      "wallet_adapter": "tronlink_tron",
+      "signer": "tronlink_local_approval",
+      "executor": "pending_sunswap_adapter",
+      "mode": "bounded_spot_pending_quote_and_contract_verification",
+      "enabled_for_execution": false,
+      "native_fee_asset": "TRX",
+      "supported_initial_assets": ["TRX", "TRC20_USDT"],
+      "reason_disabled": "Requires official SunSwap route/contract verification, quote validation, slippage/deadline controls, simulation, and post-trade verification."
     }
   },
   "global_policy": {

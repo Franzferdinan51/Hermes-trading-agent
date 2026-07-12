@@ -73,27 +73,23 @@
       "reason_disabled": "Replaced as the preferred Base venue by PancakeSwap. No Aerodrome adapter, approval, position, or execution path is enabled."
     },
     "pancakeswap_base": {
-      "status": "preferred_read_only_spot_and_earn_venue",
+      "status": "quote_verified_execution_blocked",
       "chain": "base",
       "chain_id": 8453,
       "protocol": "pancakeswap",
       "venue_type": "spot_liquidity_farming_staking_predictions_perps",
       "wallet_adapter": "coinbase_base",
       "signer": "coinbase_cdp",
-      "executor": "pending_pancakeswap_base_adapter",
-      "mode": "read_only_pending_contract_allowlist_simulation_and_policy",
+      "executor": "tools/pancakeswap_base_quote.mjs",
+      "mode": "official_smart_router_quote_only_pending_permit2_execution_adapter",
       "enabled_for_execution": false,
       "supported_initial_operations": [
-        "quotes",
-        "swap",
-        "pool_queries",
-        "liquidity_position_queries",
-        "farm_queries",
-        "staking_queries",
-        "prediction_market_queries",
-        "perps_market_queries"
+        "USDC->WETH quote",
+        "route construction",
+        "calldata inspection"
       ],
-      "reason_disabled": "Preferred Base venue. Requires official route/contract verification, CDP calldata adapter, token approvals scoped per contract, simulation, slippage/MEV controls, LP impermanent-loss model, perps liquidation/funding policy, prediction loss cap, and independent post-trade verification."
+      "reason_disabled": "Official Smart Router quote verified on Base. Execution remains blocked pending an independently simulated exact-amount Permit2 approval/permit flow and a bounded CDP transaction adapter; no generic signer or arbitrary calldata is enabled.",
+      "quote_enabled": true
     },
     "pancakeswap_solana": {
       "status": "preferred_read_only_spot_and_earn_venue",

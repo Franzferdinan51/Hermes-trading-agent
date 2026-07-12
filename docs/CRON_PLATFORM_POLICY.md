@@ -27,3 +27,7 @@ Do not resume the readiness job or add a platform to execution merely because an
 ## Cost controls
 
 Use MiniMax M2.7 Pro or the configured free NVIDIA fallback for collection/reference work. Reserve the aggregator for synthesis and risk interpretation. Do not spawn 49-agent councils; obey the configured four-agent default and five-agent cross-platform maximum.
+
+## PancakeSwap Base quote activation
+
+PancakeSwap Base quote discovery is enabled through `tools/pancakeswap_base_quote.mjs` using the official `@pancakeswap/smart-router` package. It finds routes across V2/V3 pools and builds Base calldata for the official Smart Router, but it never signs or broadcasts. PancakeSwap execution remains HOLD until an exact-amount Permit2 approval/permit flow, transaction simulation, CDP sender adapter, and independent settlement verifier are implemented and tested. PancakeSwap Solana remains disabled because no current official program/route integration has been verified.

@@ -12,6 +12,27 @@ The orchestrator coordinates Jupiter/Solana and Coinbase/Base without merging si
 - dashboard-ready JSON outputs;
 - global audit records.
 
+## Shared worker pool
+
+The same bounded workers review every platform and chain:
+
+- `market`
+- `portfolio`
+- `protocol`
+- `execution`
+- `transfer` when cross-platform movement is proposed
+
+Workers consume the normalized candidate contract and return the same vote schema regardless of venue. They do not become platform-specific agents and they do not receive signer access.
+
+```text
+Jupiter / Solana   ┐
+Coinbase / Base    │
+Robinhood / MCP    ├─> shared normalized candidate -> shared MoA workers -> shared risk gate
+TRONLink / SunSwap ┘                                      -> local adapter only
+```
+
+Platform differences are represented as adapter metadata: chain, asset identity, quote source, fee asset, signer, executor, and verification method. The global protocol, worker roles, budgets, consensus rules, audit fields, and kill switches remain shared.
+
 ## Decision pipeline
 
 ```text

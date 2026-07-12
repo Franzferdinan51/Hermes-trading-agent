@@ -35,11 +35,15 @@ def snapshot() -> dict:
         "platforms": reg["platforms"],
         "global_policy": reg["global_policy"],
         "model_routing": json.loads(MODEL_ROUTING.read_text()),
+        "shared_worker_pool": ["market", "portfolio", "protocol", "execution", "transfer"],
         "handoff": {
             "moa": "tools/moa_decision.py",
             "platform_registry": "state/platforms.json",
             "jupiter_executor": "tools/privy_jupiter_executor.py",
             "coinbase_executor": "npx awal trade",
+            "robinhood_executor": "robinhood_trading_mcp",
+            "tronlink_wallet_adapter": "pending_tronlink_adapter",
+            "sunswap_executor": "pending_sunswap_adapter",
         },
     }
 
@@ -55,6 +59,11 @@ def evaluate(path: str) -> dict:
     if not platform_cfg.get("enabled_for_execution", False):
         decision["decision"] = "HOLD"
         decision["reason"] = "platform execution is disabled or not registered"
+    if platform == "sunswap_tron":
+        wallet = reg["platforms"].get("tronlink_tron", {})
+        if not wallet.get("enabled_for_execution", False) or wallet.get("status") != "active":
+            decision["decision"] = "HOLD"
+            decision["reason"] = "SunSwap requires an active verified TronLink wallet adapter"
     decision["platform_id"] = platform
     decision["platform_status"] = platform_cfg.get("status", "unknown")
     decision["execution_authority"] = platform_cfg.get("executor")

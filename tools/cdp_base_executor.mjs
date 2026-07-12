@@ -82,6 +82,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   try {
     const args = parseArgs(process.argv.slice(2));
     if (args.help || !args.amount) { console.log('Usage: node tools/cdp_base_executor.mjs --amount 10 [--slippage-bps 50] [--execute]'); process.exit(args.help ? 0 : 2); }
-    console.log(JSON.stringify(await run(args), null, 2));
+    console.log(JSON.stringify(await run(args), (_, value) => typeof value === 'bigint' ? value.toString() : value, 2));
   } catch (e) { console.error(`ERROR: ${e.message}`); process.exit(1); }
 }

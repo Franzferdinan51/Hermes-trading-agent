@@ -2,11 +2,11 @@
 
 ## Active now
 
-Only existing Jupiter/Solana read-only monitoring, reconciliation, research, and the bounded supervisor are active. Their platform-local execution and global risk gates remain authoritative.
+Jupiter/Solana monitoring, reconciliation, research, and the bounded supervisor are active. Coinbase/CDP Base is also enabled solely for the verified `tools/cdp_base_executor.mjs` USDC→WETH path: ≤$100 USDC, ≤100 bps slippage, fresh complete-simulation quote, positive net edge, supervisor authorization, and independent receipt/balance verification. All other platform-local execution remains disabled.
 
 ## Disabled pending readiness
 
-Coinbase/Base, Robinhood Agentic/MCP, TronLink/TRON, and SunSwap/SUN MCP are registered in the wrapper but are not funded, authenticated, or fully verified for execution. They must remain `HOLD`/disabled in scheduled work.
+Robinhood Agentic/MCP, TronLink/TRON, SunSwap/SUN MCP, PancakeSwap Base/Solana, and Avantis/Base are registered in the wrapper but are not fully verified for execution. They must remain `HOLD`/disabled in scheduled work. Coinbase/Base is the sole exception: only its allowlisted CDP USDC→WETH executor is enabled.
 
 ## Shared readiness cron
 

@@ -1,6 +1,6 @@
 # Multi-Platform Trading Protocol
 
-**Status:** additive cross-management layer; Jupiter/Solana remains active, Coinbase/Base is configured but execution-disabled until funded and verified.
+**Status:** additive cross-management layer; Jupiter/Solana and a narrowly bounded Coinbase/CDP Base USDC→WETH path are active. All other Base venues remain separately disabled until individually verified.
 
 ## Profitability-first objective
 
@@ -50,7 +50,7 @@ python3 tools/platform_registry.py
 | Platform | Chain | Wallet/signer | Status | Execution |
 |---|---|---|---|---|
 | Jupiter | Solana | Privy | active | enabled through `tools/privy_jupiter_executor.py` |
-| Coinbase/CDP | Base, chain ID 8453 | Coinbase CDP `base-agent` | configured, unfunded | disabled pending funding and transaction verification |
+| Coinbase/CDP | Base, chain ID 8453 | Coinbase CDP `base-agent` | funded, quote-verified | enabled only through `tools/cdp_base_executor.mjs`: USDC→WETH, ≤$100, ≤100 bps slippage |
 
 Jupiter and Coinbase keep separate wallets, asset identities, fee reserves, policies, and executors. The common supervisor may compare their balances and opportunities, but it may not use a platform’s signer for another platform.
 
@@ -77,7 +77,7 @@ Jupiter and Coinbase keep separate wallets, asset identities, fee reserves, poli
 - Cross-platform arbitrage must remain positive after trading fees, transfer/bridge costs, spread, slippage, latency, inventory, settlement, depeg, and failure-to-fill risk.
 - A platform with stale or conflicting data is HOLD/BLOCKED, not eligible for execution.
 - Platform-local policy can be stricter than the global policy.
-- Base remains disabled until a small funding test, Base balance verification, policy review, and a successful read-only/dry-run path are complete.
+- Coinbase/CDP Base is enabled only for the bounded `tools/cdp_base_executor.mjs` USDC→WETH path: ≤$100 USDC, ≤100 bps slippage, fresh liquidity-available quote, complete simulation, positive net edge, supervisor authorization, exact Permit2 approval when required, and independent finalized receipt/balance verification. PancakeSwap, Avantis, Robinhood, TronLink, and SunSwap remain separately disabled.
 
 ## Platform adapter contract
 

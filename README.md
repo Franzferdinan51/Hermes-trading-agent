@@ -15,7 +15,7 @@ owner has approved.
 
 - **Active:** Solana via Jupiter aggregator (spot swaps, JL-USDC Earn deposits/withdrawals,
   dynamic-allowlist opportunistic trades).
-- **Active:** Base via Coinbase CDP (bounded USDC/WETH swaps using the official CDP SDK).
+- **Active:** Base via Coinbase CDP only for the allowlisted `USDC→WETH` route through `tools/cdp_base_executor.mjs` (≤$100 USDC, ≤100 bps slippage, fresh quote/simulation, net-edge gate, supervisor authorization, and independent receipt/balance verification).
 - **Authorized profit strategies:** spot, perpetuals, earn/yield, liquidity provision, staking, lending, and predictions. A strategy is never excluded merely for being non-spot; it must instead pass its venue-specific contract/program verification, all-in net-edge, strategy-risk, simulation, and supervisor gates.
 - **Primary venues:** Jupiter/Solana and PancakeSwap (Base/Solana). The supervisor compares only verified routes and selects the better risk-adjusted net outcome.
 - **First fallback:** Coinbase CDP on Base when a primary venue is unavailable, unsupported, or materially worse after all costs.

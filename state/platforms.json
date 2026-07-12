@@ -1,106 +1,14 @@
 {
   "schema_version": 1,
-  "cross_management": {
-    "enabled": true,
-    "mode": "read_only_until_platform_executor_verified",
-    "rules": [
-      "Each platform keeps its own signer and policy scope.",
-      "Cross-platform comparison is allowed; cross-chain transfer is not implied.",
-      "A transfer or bridge requires its own route, recipient, fee, finality, and recovery gate.",
-      "Global portfolio limits apply across all platforms.",
-      "Platform-local limits may be stricter than global limits."
-    ]
-  },
+  "cross_management": {"enabled": true, "mode": "read_only_until_platform_executor_verified", "rules": ["Each platform keeps its own signer and policy scope.", "Cross-platform comparison is allowed; cross-chain transfer is not implied.", "A transfer or bridge requires its own route, recipient, fee, finality, and recovery gate.", "Global portfolio limits apply across all platforms.", "Platform-local limits may be stricter than global limits."]},
   "platforms": {
-    "jupiter_solana": {
-      "status": "active",
-      "chain": "solana",
-      "wallet": "<SOLANA_WALLET_ADDRESS>",
-      "signer": "privy",
-      "executor": "tools/privy_jupiter_executor.py",
-      "mode": "bounded_spot",
-      "enabled_for_execution": true,
-      "native_fee_asset": "SOL"
-    },
-    "coinbase_base": {
-      "status": "funded_readiness_verified",
-      "chain": "base",
-      "chain_id": 8453,
-      "wallet": "<BASE_WALLET_ADDRESS>",
-      "signer": "coinbase_cdp",
-      "executor": "npx awal trade",
-      "mode": "bounded_spot_pending_policy",
-      "enabled_for_execution": false,
-      "native_fee_asset": "ETH",
-      "supported_initial_assets": ["ETH", "USDC"],
-      "reason_disabled": "Funded with verified Base USDC; awaiting a specific authorized trade, final policy review, and independent post-trade verification."
-    },
-    "avantis_base": {
-      "status": "research_only_disabled",
-      "chain": "base",
-      "protocol": "avantis",
-      "venue_type": "perpetuals_dex",
-      "collateral": "USDC",
-      "data_endpoints": ["https://data.avantisfi.com", "https://core.avantisfi.com", "https://api.avantisfi.com"],
-      "tx_builder": "https://tx-builder.avantisfi.com",
-      "wallet_adapter": "coinbase_base",
-      "signer": "coinbase_cdp",
-      "executor": "pending_avantis_adapter",
-      "mode": "research_only_no_leverage",
-      "enabled_for_execution": false,
-      "reason_disabled": "Requires dedicated perps risk policy, leverage cap, liquidation/mark-price checks, funding and fee modeling, unsigned calldata review, and independent post-trade verification."
-    },
-    "robinhood_agentic": {
-      "status": "mcp_configured_disabled",
-      "venue": "robinhood",
-      "product": "agentic_trading_account",
-      "transport": "streamable_http_mcp",
-      "mcp_endpoint": "https://agent.robinhood.com/mcp/trading",
-      "signer": "robinhood_agentic_account",
-      "executor": "robinhood_trading_mcp",
-      "mode": "read_only_pending_desktop_auth",
-      "enabled_for_execution": false,
-      "reason_disabled": "MCP endpoint is configured but requires Robinhood desktop authentication and dedicated Agentic account onboarding."
-    },
-    "tronlink_tron": {
-      "status": "planned_disabled",
-      "chain": "tron",
-      "wallet": null,
-      "signer": "tronlink_local_approval",
-      "executor": "pending_tronlink_adapter",
-      "transport": "mcp_stdio",
-      "mcp_server": "mcp-tronlink-signer",
-      "mcp_tools": ["connect_wallet", "get_balance", "send_trx", "send_trc20", "sign_transaction"],
-      "mode": "bounded_spot_pending_wallet_connection",
-      "enabled_for_execution": false,
-      "native_fee_asset": "TRX",
-      "reason_disabled": "Requires verified TronLink connection, local user approval, supported network detection, and read-only balance verification."
-    },
-    "sunswap_tron": {
-      "status": "planned_disabled",
-      "chain": "tron",
-      "protocol": "sunswap",
-      "wallet_adapter": "tronlink_tron",
-      "signer": "tronlink_local_approval",
-      "executor": "pending_sunswap_adapter",
-      "transport": "mcp_streamable_http_or_local",
-      "mcp_endpoint": "https://sun-mcp-server.bankofai.io/mcp",
-      "mcp_tools": ["read_only_queries", "quotes", "swap_operations"],
-      "mode": "bounded_spot_pending_quote_and_contract_verification",
-      "enabled_for_execution": false,
-      "native_fee_asset": "TRX",
-      "supported_initial_assets": ["TRX", "TRC20_USDT"],
-      "reason_disabled": "Requires official SunSwap route/contract verification, quote validation, slippage/deadline controls, simulation, and post-trade verification."
-    }
+    "jupiter_solana": {"status": "active", "chain": "solana", "wallet": "<SOLANA_WALLET_ADDRESS>", "signer": "privy", "executor": "tools/privy_jupiter_executor.py", "mode": "bounded_spot", "enabled_for_execution": true, "native_fee_asset": "SOL"},
+    "coinbase_base": {"status": "funded_readiness_verified", "chain": "base", "chain_id": 8453, "wallet": "<BASE_WALLET_ADDRESS>", "signer": "coinbase_cdp", "executor": "npx awal trade", "mode": "bounded_spot_pending_policy", "enabled_for_execution": false, "native_fee_asset": "ETH", "supported_initial_assets": ["ETH", "USDC"], "reason_disabled": "Funded with verified Base USDC and CDP swap executor; Aerodrome-specific routing remains separate. Awaiting a specific authorized trade, final policy review, and independent post-trade verification."},
+    "aerodrome_base": {"status": "read_only_primary_spot_venue", "chain": "base", "protocol": "aerodrome", "venue_type": "spot_and_liquidity_dex", "wallet_adapter": "coinbase_base", "signer": "coinbase_cdp", "executor": "pending_aerodrome_adapter", "agent_integration": "base_mcp_aerodrome_plugin", "mode": "read_only_pending_user_approval", "enabled_for_execution": false, "supported_initial_operations": ["quotes", "swap", "pool_queries", "basic_pool_deposit", "basic_pool_withdraw", "gauge_stake", "gauge_unstake", "claim_emissions"], "reason_disabled": "Selected as primary Base spot venue; requires CDP wallet calldata adapter, contract allowlist, simulation, approval, and post-trade verification."},
+    "robinhood_agentic": {"status": "mcp_configured_disabled", "venue": "robinhood", "product": "agentic_trading_account", "transport": "streamable_http_mcp", "mcp_endpoint": "https://agent.robinhood.com/mcp/trading", "signer": "robinhood_agentic_account", "executor": "robinhood_trading_mcp", "mode": "read_only_pending_desktop_auth", "enabled_for_execution": false, "reason_disabled": "MCP endpoint is configured but requires Robinhood desktop authentication and dedicated Agentic account onboarding."},
+    "tronlink_tron": {"status": "planned_disabled", "chain": "tron", "wallet": null, "signer": "tronlink_local_approval", "executor": "pending_tronlink_adapter", "transport": "mcp_stdio", "mcp_server": "mcp-tronlink-signer", "mcp_tools": ["connect_wallet", "get_balance", "send_trx", "send_trc20", "sign_transaction"], "mode": "bounded_spot_pending_wallet_connection", "enabled_for_execution": false, "native_fee_asset": "TRX", "reason_disabled": "Requires verified TronLink connection, local user approval, supported network detection, and read-only balance verification."},
+    "sunswap_tron": {"status": "planned_disabled", "chain": "tron", "protocol": "sunswap", "wallet_adapter": "tronlink_tron", "signer": "tronlink_local_approval", "executor": "pending_sunswap_adapter", "transport": "mcp_streamable_http_or_local", "mcp_endpoint": "https://sun-mcp-server.bankofai.io/mcp", "mcp_tools": ["read_only_queries", "quotes", "swap_operations"], "mode": "bounded_spot_pending_quote_and_contract_verification", "enabled_for_execution": false, "native_fee_asset": "TRX", "supported_initial_assets": ["TRX", "TRC20_USDT"], "reason_disabled": "Requires official SunSwap route/contract verification, quote validation, slippage/deadline controls, simulation, and post-trade verification."},
+    "avantis_base": {"status": "research_only_disabled", "chain": "base", "protocol": "avantis", "venue_type": "perpetuals_dex", "collateral": "USDC", "data_endpoints": ["https://data.avantisfi.com", "https://core.avantisfi.com", "https://api.avantisfi.com"], "tx_builder": "https://tx-builder.avantisfi.com", "wallet_adapter": "coinbase_base", "signer": "coinbase_cdp", "executor": "pending_avantis_adapter", "mode": "research_only_no_leverage", "enabled_for_execution": false, "reason_disabled": "Requires dedicated perps risk policy, leverage cap, liquidation/mark-price checks, funding and fee modeling, unsigned calldata review, and independent post-trade verification."}
   },
-  "global_policy": {
-    "max_total_risk_pct_nav": 1.0,
-    "max_daily_realized_loss_pct_nav": 2.0,
-    "require_current_balance_reconciliation": true,
-    "require_exact_asset_identity": true,
-    "require_independent_post_trade_verification": true,
-    "allow_autonomous_withdrawals": false,
-    "allow_autonomous_bridges": false,
-    "allow_arbitrary_contract_calls": false
-  }
+  "global_policy": {"max_total_risk_pct_nav": 1.0, "max_daily_realized_loss_pct_nav": 2.0, "require_current_balance_reconciliation": true, "require_exact_asset_identity": true, "require_independent_post_trade_verification": true, "allow_autonomous_withdrawals": false, "allow_autonomous_bridges": false, "allow_arbitrary_contract_calls": false}
 }

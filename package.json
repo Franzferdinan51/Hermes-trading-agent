@@ -1,0 +1,13 @@
+{
+  "name": "hermes-trading-agent-cdp-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:cdp": "node --test tests/cdp_base_executor.test.mjs",
+    "cdp:swap": "node tools/cdp_base_executor.mjs"
+  },
+  "dependencies": {
+    "@coinbase/cdp-sdk": "^1.52.0",
+    "viem": "^2.21.0"
+  }
+}

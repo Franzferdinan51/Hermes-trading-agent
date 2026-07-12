@@ -102,7 +102,7 @@ The checker is read-only. It does not create wallets, sign, broadcast, bridge, a
 - Base ETH and native Base USDC only.
 - Separate Base wallet and separate ledger bucket.
 - No arbitrary contract calls.
-- No bridge automation.
+- No autonomous withdrawals or arbitrary contract calls. Cross-platform transfer/bridge automation is permitted only through an exact allowlisted route with source/destination, asset, fee, finality, positive net-edge, supervisor, and independent reconciliation gates.
 - No autonomous withdrawals or profit sweeps.
 - Approved-contract allowlist only.
 - Small balance cap.

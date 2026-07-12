@@ -1,22 +1,18 @@
 # Hermes Trading Agent
 
-A bounded, policy-controlled crypto trading agent for **Solana via Jupiter**, with a
-permissive dynamic allowlist for opportunistic trades and a hard-coded core allowlist
-for routine rebalancing. Built around a small set of guardrails (allowlisted mints,
-file locks, emergency stop, fresh quotes, decoded transactions, simulation, finalized
-reconciliation) so a runaway or hallucinated prompt cannot move funds outside what the
-owner has approved.
+A bounded, policy-controlled crypto operations and trading agent for **Solana via Jupiter** and **Base via Coinbase CDP**. It combines live wallet reconciliation, mandatory pre-buy research, risk-proportionate entry evaluation, sell/exit review, profitability analysis, and platform-local execution. Guardrails include exact asset identity, fresh quotes, liquidity and cost checks, transaction decoding, simulation, finalized settlement, independent reconciliation, emergency stop, and one-trade locking.
 
-> This repository is a fork-and-configure template. Replace the example wallet addresses
-> with your own before doing anything. Do not deposit funds into any address that appears
-> in the documentation — those are placeholders.
+> **Current status:** Jupiter/Solana spot operations and bounded Coinbase CDP Base `USDC→WETH` are the active execution paths. Tokenized stocks/xStocks are research-enabled but execution-gated. PancakeSwap and other venues remain separately gated.
+
+> This repository is a fork-and-configure template. Replace example wallet addresses before using it. Never commit API keys, wallet secrets, private keys, `.env` files, or runtime evidence/logs.
 
 ## Scope
 
-- **Active:** Solana via Jupiter aggregator (spot swaps, JL-USDC Earn deposits/withdrawals,
-  dynamic-allowlist opportunistic trades).
-- **Active:** Base via Coinbase CDP only for the allowlisted `USDC→WETH` route through `tools/cdp_base_executor.mjs` (≤$100 USDC, ≤100 bps slippage, fresh quote/simulation, net-edge gate, supervisor authorization, and independent receipt/balance verification).
-- **Authorized profit strategies:** spot, perpetuals, earn/yield, liquidity provision, staking, lending, and predictions. A strategy is never excluded merely for being non-spot; it must instead pass its venue-specific contract/program verification, all-in net-edge, strategy-risk, simulation, and supervisor gates.
+- **Active:** Solana via Jupiter aggregator for bounded spot swaps and reconciled portfolio operations.
+- **Active:** Base via Coinbase CDP only for the allowlisted `USDC→WETH` route through `tools/cdp_base_executor.mjs` (≤$100 USDC, ≤100 bps slippage, fresh quote/simulation, positive net-edge gate, supervisor authorization, and independent receipt/balance verification). Live CDP token balances are queried through the official SDK token-balance listing.
+- **Buy evaluation:** Every buy requires the `buy-evaluation` procedure: mandatory, risk-proportionate research, exact identity, liquidity, cost, exit-path, jurisdiction, and positive-net-edge checks. Decisions are `BUY`, `DO NOT BUY`, or `RESEARCH MORE`.
+- **Tokenized stocks/xStocks:** Research and monitoring enabled; execution remains gated per asset until mint, issuer/backing, rights, redemption, liquidity, custody, settlement, and jurisdiction checks pass.
+- **Authorized profit strategies:** spot, earn/yield, liquidity provision, staking, lending, and other strategy classes only when their venue-specific executor and risk gates are verified. Leverage/perps, bridges, and predictions remain separately gated.
 - **Primary venues:** Jupiter/Solana and PancakeSwap (Base/Solana). The supervisor compares only verified routes and selects the better risk-adjusted net outcome.
 - **First fallback:** Coinbase CDP on Base when a primary venue is unavailable, unsupported, or materially worse after all costs.
 - **Secondary fallbacks:** Avantis, Robinhood, SunSwap, and TronLink remain independently gated; none may be used until its platform-specific readiness and policy requirements are met.
@@ -27,7 +23,9 @@ owner has approved.
 
 ## Profitability and portfolio buckets
 
-The operating objective is risk-adjusted profitability, not trade frequency. Candidates must show positive expected net edge after fees, spread, slippage, gas, funding, liquidity impact, transfer costs, and opportunity cost. A clean **HOLD** is preferable to a forced trade.
+The operating objective is risk-adjusted profitability, not trade frequency. Candidates must show positive expected net edge after fees, spread, slippage, gas, funding, liquidity impact, transfer costs, and opportunity cost. A clean **HOLD** is preferable to a forced trade. Research is mandatory before every buy, but diligence is risk-proportionate: established liquid assets may use a lighter entry review, while speculative, illiquid, tokenized-stock, RWA, and unfamiliar assets require deeper verification.
+
+Current global ceilings are **3% maximum total/active risk** and **5% maximum daily realized loss**. These are ceilings, not targets; position size is determined by downside, liquidity, concentration, and confidence—not available balance.
 
 Capital is managed by bucket:
 
@@ -130,8 +128,8 @@ The owner grants bounded autonomy by:
 4. Hard-coded safety floors in `tools/policy_engine.py` that cannot be relaxed by
    the dynamic allowlist: approved programs (System, Compute Budget, ATA, Token,
    Jupiter router), fee-payer check, Jupiter-router presence, transaction
-   decoding, unsigned-simulation success, ≤0.5% price impact, ≤100 bps slippage,
-   ≤20-second quote age, 0.02 SOL fee reserve, 1% NAV max loss, 2% daily realized loss.
+   transaction decoding, unsigned-simulation success, ≤0.5% price impact, ≤100 bps slippage,
+   ≤20-second quote age, 0.02 SOL fee reserve, 3% maximum total/active risk, and 5% maximum daily realized loss.
 
 ## Hard controls summary
 
@@ -205,19 +203,13 @@ python3 tools/profit_take.py --execute --slice-pct 33
 - Open leverage or perpetual positions
 - Modify wallet permissions or session keys
 
-## Cron topology (original Hermes agent)
+## Cron topology
 
-The original Hermes agent ran 15+ scheduled jobs across two model families:
+The active Hermes scheduler runs live market collectors, reconciliation and executor-health checks, yield/liquidity and news monitoring, multiple Jupiter research windows, portfolio/risk management, buy-entry evaluation, hourly sell/exit review, profit-sweep evaluation, daily portfolio reporting, and one autonomous execution supervisor. Read-only collectors and research jobs feed the supervisor; only the supervisor may authorize a bounded executor action.
 
-- **MiniMax M2.7 Pro** (cheap collectors): price, reconciliation, yield/staking, news
-- **GPT-5.6 Luna** (synthesis + decisions): research windows, day-trading, risk manager,
-  autonomous execution supervisor
+Every buy-capable workflow applies the `buy-evaluation` gate before promotion or execution. The gate returns `BUY`, `DO NOT BUY`, or `RESEARCH MORE`, with risk-proportionate diligence and explicit sizing, maximum loss, invalidation, time stop, and exit route.
 
-The supervisor runs every 2 hours, consumes collector outputs via `context_from`, validates
-candidates against the policy guard, and only invokes the executor for fully-specified
-Ready cards with verified net edge. This template ships the executor and policy guard —
-the cron orchestration and supervisor prompts are part of the Hermes Agent skill
-(`hermes-agent`) and are not bundled here.
+The supervisor runs every 2 hours, consumes current collector outputs via `context_from`, validates candidates against the policy guard, and only invokes an executor for fully specified candidates with verified net edge. Runtime evidence and logs remain local and uncommitted.
 
 ## License
 

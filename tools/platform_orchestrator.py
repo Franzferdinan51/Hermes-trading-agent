@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REGISTRY = ROOT / "state" / "platforms.json"
+MODEL_ROUTING = ROOT / "state" / "model_routing.json"
 
 
 def load_registry() -> dict:
@@ -33,6 +34,7 @@ def snapshot() -> dict:
         ],
         "platforms": reg["platforms"],
         "global_policy": reg["global_policy"],
+        "model_routing": json.loads(MODEL_ROUTING.read_text()),
         "handoff": {
             "moa": "tools/moa_decision.py",
             "platform_registry": "state/platforms.json",

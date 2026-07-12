@@ -1,0 +1,42 @@
+{
+  "policy_version": 1,
+  "default": {
+    "reference_provider": "minimax-oauth",
+    "reference_model": "MiniMax-M2.7-Pro",
+    "aggregator_provider": "openai-codex",
+    "aggregator_model": "gpt-5.6-luna",
+    "max_reference_agents": 4,
+    "max_concurrent_requests": 4,
+    "reference_token_budget": 700,
+    "aggregator_token_budget": 1000
+  },
+  "free_fallback": {
+    "reference_provider": "nvidia",
+    "reference_model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "aggregator_provider": "openai-codex",
+    "aggregator_model": "gpt-5.6-luna",
+    "max_reference_agents": 4,
+    "max_concurrent_requests": 4,
+    "reference_token_budget": 600,
+    "aggregator_token_budget": 1000
+  },
+  "security": {
+    "reference_provider": "nvidia",
+    "reference_model": "nvidia/nemotron-3-ultra-550b-a55b",
+    "aggregator_provider": "openai-codex",
+    "aggregator_model": "gpt-5.6-luna",
+    "max_reference_agents": 4,
+    "max_concurrent_requests": 4,
+    "reference_token_budget": 500,
+    "aggregator_token_budget": 900
+  },
+  "rules": [
+    "Use MiniMax M2.7 Pro first for routine collection and independent reference reviews.",
+    "Use free NVIDIA models as fallback or low-cost reference reviewers when available.",
+    "Use the stronger aggregator only for synthesis, risk decisions, and final policy interpretation.",
+    "Never let reference agents sign, broadcast, call wallet tools, or access secrets.",
+    "Do not spawn a 49-agent council for trading.",
+    "Escalate model count only for material uncertainty and within the preset cap.",
+    "Record provider, model, token budget, latency, failure, and cost metadata in evidence."
+  ]
+}

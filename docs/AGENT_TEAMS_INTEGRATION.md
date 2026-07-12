@@ -31,6 +31,22 @@ Platform-local executor
 - **Tool boundary:** reference agents are read-only; only the aggregator can call tools, and only the platform adapter can sign.
 - **Auditability:** preserve reference outputs, votes, consensus score, aggregator decision, policy result, and final verification.
 
+## Agent Mesh API integration
+
+The `agent-mesh-api` repository provides REST, WebSocket, and MCP communication patterns for agent-to-agent messages, capabilities, health, groups, and shared resources. Use it as an optional transport layer for advisory reports and health events—not as a signer or execution authority.
+
+Recommended mesh messages:
+
+- `candidate.created`
+- `reference.vote.completed`
+- `moa.synthesis.completed`
+- `risk.gate.completed`
+- `platform.snapshot.updated`
+- `execution.verification.completed`
+- `platform.health.changed`
+
+The mesh must carry normalized, non-secret evidence only. Do not send wallet secrets, private keys, CDP credentials, raw OTPs, or unrestricted transaction payloads through the mesh. Require authenticated agents, group/channel scoping, message TTLs, and health checks before relying on remote reports.
+
 ## Hermes implementation
 
 - Use `delegate_task` for bounded parallel advisory reviews.

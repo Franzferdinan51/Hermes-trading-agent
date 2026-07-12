@@ -101,9 +101,9 @@ python3 -m pip install solders pytest
 # 3. Configure your signer (Privy, Turnkey, Openfort, Phantom, etc.)
 #    Edit PRIVY_SIGN and PRIVY_SIGN_KWARGS in tools/privy_jupiter_executor.py.
 
-# 4. Edit the hard-coded ALLOWLIST in tools/privy_jupiter_executor.py
-#    to include the mints you want to trade. The five defaults are
-#    SOL, USDC, JUP, cbBTC, JupSOL.
+# 4. Review the hard-coded core ALLOWLIST in tools/privy_jupiter_executor.py.
+#    New assets must also pass the buy-evaluation procedure and, when needed,
+#    a deliberate dynamic-allowlist entry. Never add a token from a ticker alone.
 
 # 5. Run the regression suite before touching real funds
 python3 -m pytest tests/ -q

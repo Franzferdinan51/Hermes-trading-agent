@@ -23,6 +23,7 @@ ROOT      = Path(__file__).resolve().parent.parent          # crypto-trading-set
 TOOLS_DIR = ROOT / "tools"
 STATE_DIR = ROOT / "state"
 RULES     = STATE_DIR / "position_rules.json"
+THESES    = STATE_DIR / "position_theses.json"
 
 # Prepend tools so existing modules import cleanly
 if str(TOOLS_DIR) not in sys.path:
@@ -156,15 +157,14 @@ def cached_market_scan() -> dict:
 
 # ── Portfolio ─────────────────────────────────────────────────────────────────
 
-# Hardcoded from position_rules.json verified_balances_snapshot
-HOLDINGS_AMOUNTS = {
-    "SOL":    0.411193067,
-    "JUP":   53.19543,
-    "USDC":   0.50,
-    "JL-USDC": 9.93,
-    "JupSOL": 0.025072774,
-    "cbBTC":  9.719e-05,
-}
+# Loaded from the latest reconciled position_theses.json snapshot.
+def load_holdings_amounts() -> dict[str, float]:
+    try:
+        data = json.loads(THESES.read_text())
+        balances = data.get("wallet_snapshot", {}).get("balances", {})
+        return {str(k): float(v) for k, v in balances.items() if float(v) > 0}
+    except Exception:
+        return {}
 
 # CoinGecko ids for price lookup
 CG_IDS = {
@@ -205,7 +205,7 @@ def cached_portfolio() -> dict:
     total_nav = 0.0
     total_cost = 0.0
 
-    for sym, amount in HOLDINGS_AMOUNTS.items():
+    for sym, amount in load_holdings_amounts().items():
         cg_id = CG_IDS.get(sym, "")
         price_info = prices.get(cg_id, {})
         price_usd  = price_info.get("usd", 0.0)

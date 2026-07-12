@@ -47,6 +47,28 @@ Recommended mesh messages:
 
 The mesh must carry normalized, non-secret evidence only. Do not send wallet secrets, private keys, CDP credentials, raw OTPs, or unrestricted transaction payloads through the mesh. Require authenticated agents, group/channel scoping, message TTLs, and health checks before relying on remote reports.
 
+## Hermes-native MoA entry point
+
+Hermes provides a native `/moa` command for bounded Mixture-of-Agents advisory reviews. Use `/moa` when an interactive review is appropriate; use `delegate_task` for bounded scheduled subtasks and `cronjob` with `context_from` for durable collector-to-synthesizer pipelines.
+
+`/moa` follows the same project controls:
+
+- reference workers are advisory and read-only;
+- MiniMax M2.7 Pro or free NVIDIA models are preferred for reference work;
+- the default cap is 4 reference agents and the cross-platform cap is 5;
+- the aggregator synthesizes but does not bypass policy;
+- unfunded, unauthenticated, stale, or unverified platforms remain `HOLD`;
+- the deterministic MoA gate and platform-local executor remain mandatory.
+
+Example interactive review topics:
+
+```text
+/moa Review this normalized candidate across market, portfolio, protocol, and execution risk.
+/moa Compare the Jupiter, Base, Robinhood, and TRON opportunities without authorizing execution.
+```
+
+`/moa` produces analysis only. It does not authorize trades, signing, bridges, withdrawals, or arbitrary contract calls.
+
 ## Hermes implementation
 
 - Use `delegate_task` for bounded parallel advisory reviews.

@@ -204,6 +204,14 @@ python3 tools/profit_take.py
 python3 tools/profit_take.py --execute --slice-pct 33
 ```
 
+## Supervisor context and execution
+
+The autonomous supervisor is not limited to reviewing pre-approved `Ready` cards. Each cycle independently reads the latest market collector, wallet reconciliation, multi-platform readiness, research scans, portfolio risk manager, yield/staking monitor, news monitor, sell/exit, and profit-sweep outputs through its configured context handoff. This prevents generic `HOLD` decisions caused by missing or stale research context.
+
+The supervisor may consider day trades and multiple simultaneous positions when justified. There is no arbitrary position-count cap; aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity are the constraints. Direct SOL-funded routes may be evaluated when the SOL fee reserve is preserved; zero USDC is not an automatic blocker.
+
+Only verified bounded routes may execute, and every action still requires positive net edge after costs, current balance reconciliation, exact asset identity, route authorization, simulation/preflight, finalized receipt verification, and post-trade reconciliation.
+
 ## Dashboard and runtime wrappers
 
 The GitHub repository includes the read-only web trading terminal under `tools/dashboard/`. Start it locally with the dashboard's Docker Compose definition or the Flask entry point; it exposes portfolio, macro, market, chart, news, alerts, and health endpoints.

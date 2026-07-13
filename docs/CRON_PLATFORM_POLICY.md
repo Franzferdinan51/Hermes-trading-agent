@@ -8,6 +8,10 @@ Jupiter/Solana monitoring, reconciliation, research, and the bounded supervisor 
 
 Robinhood Agentic/MCP, TronLink/TRON, SunSwap/SUN MCP, PancakeSwap Base/Solana, and Avantis/Base are registered in the wrapper but are not fully verified for execution. They must remain `HOLD`/disabled in scheduled work. Coinbase/Base is the sole exception: only its allowlisted CDP USDC→WETH executor is enabled.
 
+## Supervisor context handoff
+
+The autonomous supervisor receives the latest outputs from market collection, wallet reconciliation, multi-platform readiness, research scans, portfolio risk, yield/staking diligence, news, sell/exit, and profit-sweep jobs. It may independently create and evaluate candidates rather than waiting for a pre-approved Ready card. Day trading and multiple simultaneous positions are permitted when aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity support them; there is no arbitrary position-count cap. Zero USDC is not an automatic blocker when a direct SOL-funded route preserves the native fee reserve.
+
 ## Shared readiness cron
 
 Hermes job: `Multi-Platform Readiness and MoA Monitor`

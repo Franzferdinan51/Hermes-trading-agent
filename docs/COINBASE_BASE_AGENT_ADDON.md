@@ -54,4 +54,8 @@ Before enabling any transaction capability:
 
 ## Current status
 
-The current environment has no detected CDP credentials and no Coinbase AgentKit Python package installed. The additive readiness checker is installed, but Base wallet creation and signing remain intentionally disabled until credentials, wallet policy, and the exact Coinbase SDK/CLI path are configured.
+- CDP credentials are configured and the Base wallet `<BASE_WALLET_ADDRESS>` is funded.
+- Live balance probe: `node tools/cdp_base_balance.mjs` (official CDP SDK, primary source).
+- Execution: bounded USDC→WETH via `node tools/cdp_base_executor.mjs --amount N --slippage-bps N --execute`.
+- The supervisor template and `platforms.json` treat Jupiter/Solana and Coinbase CDP/Base as equal co-primary first-tier venues.
+- PancakeSwap Base/Solana are first-tier research/quote venues; execution remains gated pending Permit2/simulation/adapter verification.

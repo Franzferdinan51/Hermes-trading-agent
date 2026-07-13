@@ -4,24 +4,24 @@
     "enabled": true,
     "mode": "read_only_until_platform_executor_verified",
     "venue_routing_priority": [
-      "pancakeswap_base",
-      "pancakeswap_solana",
-      "jupiter_solana",
-      "coinbase_base",
-      "avantis_base",
-      "robinhood_agentic",
-      "sunswap_tron",
-      "tronlink_tron"
+        "jupiter_solana",
+        "coinbase_base",
+        "pancakeswap_base",
+        "pancakeswap_solana",
+        "avantis_base",
+        "robinhood_agentic",
+        "sunswap_tron",
+        "tronlink_tron"
     ],
     "rules": [
-      "PancakeSwap and Jupiter are the primary venues; select between their verified routes by risk-adjusted net outcome.",
-      "Coinbase/CDP Base is the first fallback when the primary venues are unavailable, unsupported, or demonstrably worse after all costs.",
-      "All remaining venues are secondary fallbacks and require independent readiness plus platform-local policy approval.",
-      "Each platform keeps its own signer and policy scope.",
-      "Cross-platform comparison is allowed; cross-chain transfer is not implied.",
-      "A transfer or bridge requires its own route, recipient, fee, finality, and recovery gate.",
-      "Global portfolio limits apply across all platforms.",
-      "Platform-local limits may be stricter than global limits."
+        "Jupiter/Solana and Coinbase CDP/Base are co-primary equal first-tier venues; select the best verified risk-adjusted net outcome after all costs.",
+        "PancakeSwap Base and Solana are first-tier research and quote discovery venues; execution remains gated until Permit2/simulation/adapter/receipt gates pass.",
+        "All remaining venues are secondary and require independent readiness plus platform-local policy approval.",
+        "Each platform keeps its own signer and policy scope.",
+        "Cross-platform comparison is allowed; cross-chain transfer is not implied.",
+        "A transfer or bridge requires its own route, recipient, fee, finality, and recovery gate.",
+        "Global portfolio limits apply across all platforms.",
+        "Platform-local limits may be stricter than global limits."
     ]
   },
   "platforms": {

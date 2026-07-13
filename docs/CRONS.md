@@ -80,7 +80,7 @@ Complete reference for all 26 scheduled jobs that power the Hermes Trading Agent
 
 | Strategy | Status | Notes |
 |---|---|---|
-| `perps` | DORMANT | Requires Jupiter Perps SDK |
+| `perps` | **ACTIVE** ✅ | Jupiter Perps v2 (SOL/WBTC/ETH, 3x leverage, 10% NAV max) |
 | `predictions` | DORMANT | Requires Jupiter Terminal predictions |
 | `market_scanner` | **ACTIVE** ✅ | Wired into all research crons |
 | `macro_monitor` | **ACTIVE** ✅ | Wired into supervisor, price/news monitor |

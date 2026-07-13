@@ -26,11 +26,12 @@ ROOT = Path(__file__).resolve().parent.parent
 STATE = ROOT / "state"
 RULES_FILE = STATE / "position_rules.json"
 
-# Jupiter Terminal API
-TERMINAL_API = "https://terminal.jup.ag/api"
-TERMINAL_MARKETS = f"{TERMINAL_API}/markets"
+# Jupiter Prediction API (beta; requires a Jupiter Developer API key)
+PREDICTION_API = "https://api.jup.ag/prediction/v1"
+TERMINAL_API = PREDICTION_API
+TERMINAL_MARKETS = f"{TERMINAL_API}/events"
 TERMINAL_MARKET = f"{TERMINAL_API}/markets/{{market_id}}"
-TERMINAL_ORDERBOOK = f"{TERMINAL_API}/orderbook/{{market_id}}"
+TERMINAL_ORDERBOOK = f"{TERMINAL_API}/markets/{{market_id}}/orderbook"
 
 # Solana RPC
 RPC_URL = "https://api.mainnet-beta.solana.com"
@@ -44,32 +45,48 @@ def _rpc(method: str, params: list) -> dict:
 
 
 def _http_json(url: str, timeout: int = 15) -> dict:
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    headers = {"User-Agent": "Hermes prediction tracker", "Accept": "application/json"}
+    try:
+        from jupiter_api import api_key
+        headers["x-api-key"] = api_key()
+    except Exception:
+        pass
+    req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.loads(r.read())
 
 
+def _timestamp(value: Any) -> int:
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp())
+        except ValueError:
+            return 0
+    return 0
+
+
 @dataclass
 class PredictionMarket:
-    """Jupiter Terminal prediction market."""
+    """Jupiter Prediction API market."""
     market_id: str
     question: str
-    category: str                    # "crypto", "defi", "macro", "sports", etc.
-    yes_mint: str                    # YES outcome token
-    no_mint: str                     # NO outcome token
-    expiry_ts: int                   # Unix timestamp
-    resolution_source: str           # "api", "oracle", "manual"
-    status: str                      # "open", "resolved", "cancelled"
-    # Live data
-    yes_price: float = 0.0           # USDC per YES token (0-1)
-    no_price: float = 0.0            # USDC per NO token (0-1)
+    category: str
+    yes_mint: str
+    no_mint: str
+    expiry_ts: int
+    resolution_source: str
+    status: str
+    yes_price: float = 0.0
+    no_price: float = 0.0
     yes_volume: float = 0.0
     no_volume: float = 0.0
     total_volume: float = 0.0
-    implied_prob_yes: float = 0.0    # yes_price / (yes_price + no_price)
+    implied_prob_yes: float = 0.0
     implied_prob_no: float = 0.0
     created_ts: int = 0
-    resolved_outcome: str | None = None  # "yes", "no", None
+    resolved_outcome: str | None = None
 
 
 @dataclass
@@ -105,24 +122,30 @@ class TerminalClient:
                 params["category"] = category
             url = f"{TERMINAL_MARKETS}?{urllib.parse.urlencode(params)}"
             data = _http_json(url)
+            # Prediction API returns events containing nested markets.
+            raw_markets = data.get("markets", [])
+            if not raw_markets:
+                raw_markets = [m | {"_event": e} for e in data.get("data", []) for m in e.get("markets", [])]
             markets = []
-            for m in data.get("markets", []):
+            for m in raw_markets:
+                event = m.get("_event", {})
+                pricing = m.get("pricing", {}) or {}
+                tokens = m.get("clobTokenIds", []) or []
+                outcomes = m.get("outcomes", []) or []
                 markets.append(PredictionMarket(
-                    market_id=m["marketId"],
-                    question=m["question"],
-                    category=m.get("category", "unknown"),
-                    yes_mint=m["yesMint"],
-                    no_mint=m["noMint"],
-                    expiry_ts=m["expiryTimestamp"],
-                    resolution_source=m.get("resolutionSource", "api"),
+                    market_id=str(m.get("marketId", "")),
+                    question=m.get("title") or event.get("metadata", {}).get("title", ""),
+                    category=m.get("category", event.get("category", "unknown")),
+                    yes_mint=str(tokens[0]) if len(tokens) > 0 else "",
+                    no_mint=str(tokens[1]) if len(tokens) > 1 else "",
+                    expiry_ts=_timestamp(m.get("resolveAt") or m.get("closeTime")),
+                    resolution_source=m.get("provider", "jupiter"),
                     status=m.get("status", "open"),
-                    yes_price=float(m.get("yesPrice", 0)),
-                    no_price=float(m.get("noPrice", 0)),
-                    yes_volume=float(m.get("yesVolume", 0)),
-                    no_volume=float(m.get("noVolume", 0)),
-                    total_volume=float(m.get("totalVolume", 0)),
-                    created_ts=m.get("createdTimestamp", 0),
-                    resolved_outcome=m.get("resolvedOutcome"),
+                    yes_price=float(pricing.get("buyYesPriceUsd", 0)) / 1_000_000,
+                    no_price=float(pricing.get("buyNoPriceUsd", 0)) / 1_000_000,
+                    total_volume=float(pricing.get("volume", 0)) / 1_000_000,
+                    created_ts=_timestamp(m.get("openTime")),
+                    resolved_outcome=m.get("result"),
                 ))
             return markets
         except Exception as e:

@@ -42,6 +42,10 @@ Use single quotes around every argument passed through the shell. This preserves
 | `MEMORY` | Brain pruning or reflection lifecycle only | operation, safe aggregate counts, errors, next action |
 | `REPORT` | Consolidated daily or cross-venue report | NAV basis, positions, material events, decisions, open items |
 
+## Kanban coordination
+
+Every scheduled job also checks `hermes kanban list` at the start of its cycle. Kanban is the actionable-work layer: a material `WATCH`, `ALERT`, blocker, discrepancy, security event, or research finding that needs follow-up must create or update a card, with evidence and UTC timing. A routine healthy/HOLD cycle stays in the handoff ledger and does not create noise cards; verified resolutions complete their Kanban card and record its ID in the ledger.
+
 ## Cross-cron dependency rules
 
 - The hourly Perps monitor writes `state/perps_monitor_latest.json` and `state/perps_monitor_latest.md` in addition to its `PERPS` ledger record.

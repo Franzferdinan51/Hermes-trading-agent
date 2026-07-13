@@ -43,6 +43,10 @@ An API response, Privy hash, or a submitted-looking RPC value is never considere
 6. **Execute only through the required transaction path** above.
 7. **Verify independently:** finalized Solana result plus `/positions` result. Record evidence, timestamp, position pubkey, TP/SL order IDs, and real P/L.
 
+## Perps valuation in portfolio reports
+
+Portfolio, profit-sweep, and risk reports include every open Perps position using **Perps equity**: `collateralUsd + pnlAfterFeesUsd`. They must not add full notional position size, because that double-counts borrowed exposure. If live equity is unavailable, label NAV incomplete rather than silently excluding the position.
+
 ## Monitoring while a position is open
 
 ### First line: hourly MiniMax M2.7 monitor

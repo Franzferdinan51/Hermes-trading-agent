@@ -1,6 +1,6 @@
 # Cron Jobs Documentation
 
-Complete reference for all 26 scheduled jobs that power the Hermes Trading Agent.
+Complete reference for all 27 scheduled jobs that power the Hermes Trading Agent.
 
 > Jobs run on the active Hermes profile. Live state is in `~/.hermes/cron/jobs.json` (gitignored). This document is the authoritative reference for what each job does, when it runs, and which model it uses.
 
@@ -27,6 +27,7 @@ Complete reference for all 26 scheduled jobs that power the Hermes Trading Agent
 | 24 | DuckBot Crypto Trading | every 2h | M3 | Solana trading scan |
 | 25 | DuckBot Profit Sweep | daily 6 PM ET | M3 | Solana sweep |
 | 26 | DuckBot Wallet Poller | every 30 min | M2.7 | Balance monitoring |
+| 27 | **Jupiter Perps Position Guardian** | every 15 min | script-only | Silent TP/SL, trigger, liquidation and API alerting |
 
 ## Model Hierarchy
 
@@ -62,6 +63,7 @@ Complete reference for all 26 scheduled jobs that power the Hermes Trading Agent
 - **Multi-Platform Readiness** — Every 2 hours Coinbase/Robinhood status
 - **Daily Multi-Platform Portfolio Report** — End-of-day summary
 - **DuckBot Wallet Poller** — Every 30 minutes balance check
+- **Jupiter Perps Position Guardian** — Every 15 minutes; silent healthy checks, Telegram alert on missing full TP/SL, near trigger, weak liquidation buffer, or Jupiter API failure. It is read-only and cannot trade.
 
 ### 4. Execution Authority
 - **Autonomous Portfolio Execution Supervisor** — GPT Luna, every 2 hours

@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+"""Silent Jupiter Perps position guardian.
+
+Runs read-only. It writes nothing when all live positions have valid protection.
+It emits an alert when Jupiter Perps data cannot be read, a position lacks a
+full TP/SL, a trigger is within 0.75% of mark price, or liquidation safety is
+below the configured 30% buffer.
+
+It deliberately NEVER opens, modifies, or closes a trade. Existing TP/SL
+orders remain the first-line on-chain protection.
+"""
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+
+from jupiter_perps_executor import get_positions  # noqa: E402
+
+TRIGGER_ALERT_DISTANCE_PCT = 0.0075  # 0.75% from an on-chain TP/SL trigger
+MIN_LIQUIDATION_BUFFER_PCT = 0.30    # 30% minimum adverse-move room
+
+
+def usd(micros):
+    return float(micros or 0) / 1_000_000
+
+
+def main():
+    try:
+        positions = get_positions()
+    except Exception as exc:
+        print(f"🚨 JUPITER PERPS GUARDIAN ALERT\nCannot read open positions: {exc}")
+        return 2
+
+    alerts = []
+    for p in positions:
+        asset = p.get("asset", "UNKNOWN")
+        side = str(p.get("side", "")).lower()
+        mark = usd(p.get("markPriceUsd"))
+        entry = usd(p.get("entryPriceUsd"))
+        liquidation = usd(p.get("liquidationPriceUsd"))
+        size = usd(p.get("sizeUsd"))
+        pnl = usd(p.get("pnlAfterFeesUsd"))
+        pubkey = p.get("positionPubkey", "unknown")
+        tpsl = p.get("tpslRequests") or []
+        tp = next((x for x in tpsl if x.get("requestType") == "tp" and x.get("sizePercentage") == "100.00"), None)
+        sl = next((x for x in tpsl if x.get("requestType") == "sl" and x.get("sizePercentage") == "100.00"), None)
+
+        missing = []
+        if not tp:
+            missing.append("full TP")
+        if not sl:
+            missing.append("full stop-loss")
+        if missing:
+            alerts.append(f"{asset} {side}: missing {', '.join(missing)} (position {pubkey})")
+            continue
+
+        tp_price = usd(tp.get("triggerPriceUsd"))
+        sl_price = usd(sl.get("triggerPriceUsd"))
+        if mark <= 0:
+            alerts.append(f"{asset} {side}: invalid mark price from Jupiter")
+            continue
+
+        # For shorts, liquidation must be above mark; for longs, below mark.
+        if side == "short":
+            liq_buffer = (liquidation - mark) / mark
+        elif side == "long":
+            liq_buffer = (mark - liquidation) / mark
+        else:
+            alerts.append(f"{asset}: unknown side '{side}'")
+            continue
+
+        if liq_buffer < MIN_LIQUIDATION_BUFFER_PCT:
+            alerts.append(f"{asset} {side}: liquidation buffer {liq_buffer:.1%} below 30% minimum")
+
+        trigger_distance = min(abs(mark - tp_price), abs(mark - sl_price)) / mark
+        if trigger_distance <= TRIGGER_ALERT_DISTANCE_PCT:
+            alerts.append(
+                f"{asset} {side}: mark ${mark:.2f} is {trigger_distance:.2%} from TP ${tp_price:.2f} or stop ${sl_price:.2f}; "
+                f"size ${size:.2f}, P/L ${pnl:.2f}"
+            )
+
+    if alerts:
+        print("🚨 JUPITER PERPS GUARDIAN ALERT")
+        print("\n".join(f"• {a}" for a in alerts))
+        return 1
+    # Empty stdout means silent healthy run for no_agent cron jobs.
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

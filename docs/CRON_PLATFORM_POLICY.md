@@ -21,7 +21,7 @@ The autonomous supervisor receives the latest outputs from market collection, wa
 
 | Strategy | Status | Config |
 |---|---|---|
-| `perps` | **DORMANT** | enabled: false — requires Jupiter Perps SDK |
+| `perps` | **ACTIVE** ✅ | Jupiter Perps v2 (SOL/WBTC/ETH); Privy → Jupiter co-signer executor; guardian every 15m |
 | `predictions` | **DORMANT** | enabled: false — requires Jupiter Terminal predictions |
 | `market_scanner` | **ACTIVE** ✅ | enabled: true — wired into all research crons |
 | `macro_monitor` | **ACTIVE** ✅ | enabled: true — wired into supervisor, price monitor, news monitor |

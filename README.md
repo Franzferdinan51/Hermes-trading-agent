@@ -22,6 +22,10 @@ A bounded, policy-controlled crypto operations and trading agent for **Solana vi
   `legacy/` for the historical record only. They are explicitly deprecated and ignored
   by the active code path.
 
+## Cron Jobs
+
+All 26 scheduled jobs are documented in [`docs/CRONS.md`](docs/CRONS.md) — schedules, models, purposes, and the model hierarchy rationale.
+
 ## Profitability and portfolio buckets
 
 The operating objective is risk-adjusted profitability, not trade frequency. Candidates must show positive expected net edge after fees, spread, slippage, gas, funding, liquidity impact, transfer costs, and opportunity cost. A clean **HOLD** is preferable to a forced trade. Research is mandatory before every buy, but diligence is risk-proportionate: established liquid assets may use a lighter entry review, while speculative, illiquid, tokenized-stock, RWA, and unfamiliar assets require deeper verification.

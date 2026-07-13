@@ -208,6 +208,10 @@ python3 tools/profit_take.py --execute --slice-pct 33
 
 The autonomous supervisor is not limited to reviewing pre-approved `Ready` cards. Each cycle independently reads the latest market collector, wallet reconciliation, multi-platform readiness, research scans, portfolio risk manager, yield/staking monitor, news monitor, sell/exit, and profit-sweep outputs through its configured context handoff. This prevents generic `HOLD` decisions caused by missing or stale research context.
 
+**Live-data mandate:** Before every report, ranking, or decision, the relevant cron must refresh wallet balances, token accounts, prices, quotes, liquidity, positions, P&L, platform readiness, and current yield/earn rates. Stale, unavailable, or unreconciled information must be labeled explicitly; material decisions must remain `HOLD` until live reconciliation is restored.
+
+**Long-hold utilization:** Every material long-term or extra-long-term holding—not only USDC—must be evaluated for verified staking, liquid staking, governance/voting, lending, Earn, LP/JLP, vault, or other productive-use routes. This includes SOL, JUP, BTC/cbBTC, liquid-staking assets, LP/LST receipts, governance assets, and other verified holdings where applicable. Compare net yield or strategic value against lockup, withdrawal, smart-contract, oracle, validator, borrower/liquidation, custody, depeg, liquidity, and opportunity costs. Preserve liquidity and do not deploy automatically.
+
 The supervisor may consider day trades and multiple simultaneous positions when justified. There is no arbitrary position-count cap; aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity are the constraints. Direct SOL-funded routes may be evaluated when the SOL fee reserve is preserved; zero USDC is not an automatic blocker.
 
 Only verified bounded routes may execute, and every action still requires positive net edge after costs, current balance reconciliation, exact asset identity, route authorization, simulation/preflight, finalized receipt verification, and post-trade reconciliation.

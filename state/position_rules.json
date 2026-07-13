@@ -53,7 +53,7 @@
       "note": "Jupiter Terminal prediction markets. YES/NO tokens priced 0-1 USDC. Enable when ready to scan for mispriced probabilities."
     },
     "market_scanner": {
-      "enabled": false,
+      "enabled": true,
       "min_volume_usd": 5000,
       "min_liquidity_usd": 1000,
       "max_age_days": 365,
@@ -65,16 +65,16 @@
         "utility",
         "governance"
       ],
-      "note": "Jupiter Terminal scanner: top-traded + cooking feeds. Scans volume, liquidity, price momentum, new listings. Enable when ready."
+      "note": "Jupiter Terminal scanner: top-traded + cooking feeds. Scans volume, liquidity, price momentum, new listings. ACTIVE \u2014 wired into research crons."
     },
     "macro_monitor": {
-      "enabled": false,
+      "enabled": true,
       "fear_greed_threshold_low": 20,
       "fear_greed_threshold_high": 85,
       "btc_dump_alert_pct": -10,
       "dxy_move_threshold_pct": 0.5,
       "alert_on_high_impact_macro": true,
-      "note": "Macro intelligence: BTC price/dominance, Fear & Greed, DXY, S&P 500, VIX, Solana network health, crypto news, macro calendar. Enable when ready."
+      "note": "Macro intelligence: BTC price/dominance, Fear & Greed, DXY, S&P 500, VIX, Solana network health, crypto news, macro calendar. ACTIVE \u2014 wired into research crons."
     },
     "action_on_trigger": "policy_review_then_execute_only_through_guard",
     "verified_wallet_nav_usd": 93.16233606952,

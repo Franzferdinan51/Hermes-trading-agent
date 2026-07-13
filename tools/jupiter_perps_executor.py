@@ -251,40 +251,51 @@ def execute_signed_tx(
     if not signed_tx_b64:
         raise RuntimeError(f"Could not extract signed transaction. Response: {parsed}")
 
-    # Step 2: Broadcast via Solana RPC
-    broadcast_payload = json.dumps({
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "sendTransaction",
-        "params": [
-            signed_tx_b64,
-            {"encoding": "base64", "skipPreflight": False, "preflightCommitment": "confirmed"}
-        ]
+    # Safety validation before handing the partially signed transaction back to Jupiter.
+    # Jupiter Perps transactions intentionally contain a Jupiter co-signer slot, so direct
+    # Solana RPC broadcast always fails signature verification. The documented completion
+    # path is POST /v2/transaction/execute, which supplies Jupiter's co-signature and sends.
+    import base64
+    from solders.message import to_bytes_versioned
+    from solders.pubkey import Pubkey
+    from solders.transaction import VersionedTransaction
+
+    vtx = VersionedTransaction.from_bytes(base64.b64decode(signed_tx_b64))
+    required = vtx.message.header.num_required_signatures
+    if required < 2:
+        raise RuntimeError(f"Unexpected Jupiter Perps transaction: only {required} required signer(s)")
+    payer = str(vtx.message.account_keys[0])
+    if payer != wallet:
+        raise RuntimeError(f"Refusing to execute: fee payer {payer} does not match wallet {wallet}")
+    if not vtx.signatures[0].verify(Pubkey.from_string(wallet), to_bytes_versioned(vtx.message)):
+        raise RuntimeError("Privy wallet signature verification failed")
+    # A non-wallet co-signer slot is expected and must be completed by Jupiter's execute API.
+    if str(vtx.signatures[1]) != "1111111111111111111111111111111111111111111111111111111111111111":
+        raise RuntimeError("Unexpected co-signer state; refusing execution")
+
+    # Step 2: Jupiter's documented executor completes the co-signature and broadcasts.
+    api_action = {
+        "open-position": "increase-position",
+        "increase-position": "increase-position",
+        "close-position": "decrease-position",
+        "decrease-position": "decrease-position",
+    }.get(action, action)
+    if api_action not in {"increase-position", "decrease-position", "increase-position-with-fee", "decrease-position-with-fee"}:
+        raise RuntimeError(f"Unsupported Jupiter execution action: {api_action}")
+    execute_resp = perps_post("/transaction/execute", {
+        "action": api_action,
+        "serializedTxBase64": signed_tx_b64,
     })
-
-    req = urllib.request.Request(
-        "https://api.mainnet-beta.solana.com",
-        data=broadcast_payload.encode(),
-        headers={"Content-Type": "application/json", "User-Agent": "HermesTradingAgent/1.0"},
-        method="POST"
-    )
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        broadcast_resp = json.loads(resp.read())
-
-    if "error" in broadcast_resp:
-        raise RuntimeError(f"Solana RPC error: {broadcast_resp['error']}")
-
-    signature = broadcast_resp.get("result")
+    signature = execute_resp.get("signature") or execute_resp.get("txid") or execute_resp.get("transactionSignature")
     if not signature:
-        raise RuntimeError(f"No signature in broadcast response: {broadcast_resp}")
+        raise RuntimeError(f"Jupiter execute returned no Solana signature: {execute_resp}")
 
     return {
-        "action": action,
+        "action": api_action,
         "wallet": wallet,
         "signature": signature,
-        "signed_tx_b64": signed_tx_b64,
         "privy_response": parsed,
-        "broadcast_response": broadcast_resp,
+        "jupiter_execute_response": execute_resp,
     }
 
 

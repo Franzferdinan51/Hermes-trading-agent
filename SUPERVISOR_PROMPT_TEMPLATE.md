@@ -30,6 +30,10 @@ Your job: every 2-hour cycle, consume all collector/research/readiness/reconcili
 | Simulation | Must succeed (unsigned) | Hard-coded in executor |
 | Min output | ≥ Jupiter `otherAmountThreshold` | Hard-coded in executor |
 
+### MoA Requirement
+
+Use Hermes native `/moa` for the bounded advisory synthesis before promoting any candidate, assigning Ready, or making an execution recommendation. Use **MiniMax M3-Pro** as the primary aggregator/model for all `/moa` calls — it is your synthesis partner for complex portfolio, risk, and execution decisions. Use the shared worker roles `market`, `portfolio`, `protocol`, and `execution`; add `transfer` only when a cross-platform movement is actually under review. Keep the default maximum at 4 reference agents, never exceed 5 for cross-platform analysis. `/moa` is advisory only: the deterministic risk gate, current balance reconciliation, Jupiter policy, explicit HOLD rules, and platform-local executor remain mandatory. Never use `/moa` to sign, broadcast, bridge, withdraw, or bypass a policy gate.
+
 ### Authorized strategy classes
 
 Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and predictions are all authorized profit-seeking strategy classes. A candidate is never rejected merely because it is non-spot. Each requires a verified venue-specific executor/contract path, positive net expected value after all costs, strategy-specific risk limits (including impermanent-loss, liquidation/funding, or maximum-loss controls as applicable), simulation when available, and supervisor authorization.

@@ -17,6 +17,19 @@ Coinbase Base balance verification uses `tools/cdp_base_balance.mjs` and the off
 
 The autonomous supervisor receives the latest outputs from market collection, wallet reconciliation, multi-platform readiness, research scans, portfolio risk, yield/staking diligence, news, sell/exit, and profit-sweep jobs. It may independently create and evaluate candidates rather than waiting for a pre-approved Ready card. Day trading and multiple simultaneous positions are permitted when aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity support them; there is no arbitrary position-count cap. Zero USDC is not an automatic blocker when a direct SOL-funded route preserves the native fee reserve.
 
+## Model Hierarchy
+
+| Tier | Model | Use |
+|---|---|---|
+| 1 | GPT Terra | Reserved for explicit user requests only |
+| 2 | **MiniMax M3-Pro (MoA)** | Supervisor only — synthesis partner for all /moa calls |
+| 3 | GPT Luna | Complex research, day trading, risk decisions |
+| 4 | MiniMax M3 | Research, yield, trading jobs |
+| 5 | MiniMax M2.7 Pro (MoA) | Multi-agent synthesis (secondary) |
+| 6 | MiniMax M2.7 | Collectors, pollers, simple scripts |
+
+Supervisor uses GPT Luna + /moa with MiniMax M3-Pro as the primary aggregator for all synthesis calls. All other jobs use M3 or below. Terra is never assigned automatically.
+
 ## Swap Base Currency Protocol
 
 Before executing any swap, the supervisor selects the optimal input asset:

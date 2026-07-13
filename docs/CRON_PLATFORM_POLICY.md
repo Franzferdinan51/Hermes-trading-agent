@@ -17,6 +17,19 @@ Coinbase Base balance verification uses `tools/cdp_base_balance.mjs` and the off
 
 The autonomous supervisor receives the latest outputs from market collection, wallet reconciliation, multi-platform readiness, research scans, portfolio risk, yield/staking diligence, news, sell/exit, and profit-sweep jobs. It may independently create and evaluate candidates rather than waiting for a pre-approved Ready card. Day trading and multiple simultaneous positions are permitted when aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity support them; there is no arbitrary position-count cap. Zero USDC is not an automatic blocker when a direct SOL-funded route preserves the native fee reserve.
 
+## Non-Spot Strategies (ACTIVE)
+
+| Strategy | Status | Config |
+|---|---|---|
+| `perps` | **DORMANT** | enabled: false — requires Jupiter Perps SDK |
+| `predictions` | **DORMANT** | enabled: false — requires Jupiter Terminal predictions |
+| `market_scanner` | **ACTIVE** ✅ | enabled: true — wired into all research crons |
+| `macro_monitor` | **ACTIVE** ✅ | enabled: true — wired into supervisor, price monitor, news monitor |
+
+**market_scanner** queries Jupiter Terminal API for top-traded + cooking tokens (volume ≥$5k, liquidity ≥$1k, age ≤365d). All candidates must pass: exact mint verification, Token-2022 extension check, issuer confirmation, top-10 holder concentration <30%, independent LP liquidity, CoinGecko presence, honeypot screen. Scanner candidates with a verified Jupiter route and positive net edge → WATCH or Ready.
+
+**macro_monitor** checks: BTC price/dominance, Fear & Greed (≤20 buy / ≥85 sell), DXY move (≥0.5% alert), S&P 500, VIX (≥5pts spike alert), Solana network health, high-impact macro events (rate decisions, CPI, crypto regulation). Threshold breaches are flagged with recommended portfolio action.
+
 ## Model Hierarchy
 
 | Tier | Model | Use |

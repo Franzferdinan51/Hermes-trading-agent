@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-07-13T22:16:22.729424+00:00",
+  "status": "healthy",
+  "open_positions": 1,
+  "positions": [
+    {
+      "asset": "SOL",
+      "side": "short",
+      "position_pubkey": "tC47MWtFwhrHTs61HQfFdZbRaVDq3pfVeodTQ9RbDN2",
+      "size_usd": 11.9874,
+      "entry_usd": 74.229343,
+      "mark_usd": 74.550765,
+      "pnl_usd": -0.066331,
+      "liquidation_usd": 135.887014,
+      "liquidation_buffer_pct": 82.274,
+      "tp_usd": 71.5,
+      "stop_usd": 75.25,
+      "nearest_trigger_distance_pct": 0.938,
+      "full_tp": true,
+      "full_stop": true
+    }
+  ]
+}

@@ -12,6 +12,7 @@ orders remain the first-line on-chain protection.
 import argparse
 import json
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -104,7 +105,37 @@ def main(report=False):
         print("\n".join(f"• {a}" for a in alerts))
         return 1
     if report:
-        print(json.dumps({"status": "healthy", "open_positions": len(positions), "positions": snapshots}, indent=2))
+        payload = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "status": "healthy",
+            "open_positions": len(positions),
+            "positions": snapshots,
+        }
+        state_dir = ROOT / "state"
+        state_dir.mkdir(exist_ok=True)
+        (state_dir / "perps_monitor_latest.json").write_text(json.dumps(payload, indent=2) + "\n")
+        lines = [
+            "# Jupiter Perps Monitor State",
+            "",
+            f"Updated (UTC): {payload['generated_at']}",
+            f"Status: {payload['status']}",
+            f"Open positions: {payload['open_positions']}",
+            "",
+        ]
+        for row in snapshots:
+            lines.extend([
+                f"## {row['asset']} {row['side'].upper()}",
+                f"- Size: ${row['size_usd']:.2f}",
+                f"- Entry / Mark: ${row['entry_usd']:.4f} / ${row['mark_usd']:.4f}",
+                f"- P/L: ${row['pnl_usd']:.4f}",
+                f"- TP / Stop: ${row['tp_usd']:.4f} / ${row['stop_usd']:.4f}",
+                f"- Liquidation: ${row['liquidation_usd']:.4f} ({row['liquidation_buffer_pct']:.2f}% buffer)",
+                f"- Nearest trigger distance: {row['nearest_trigger_distance_pct']:.3f}%",
+                f"- Full TP / stop: {row['full_tp']} / {row['full_stop']}",
+                "",
+            ])
+        (state_dir / "perps_monitor_latest.md").write_text("\n".join(lines))
+        print(json.dumps(payload, indent=2))
     # Empty stdout means silent healthy run for no_agent cron jobs.
     return 0
 

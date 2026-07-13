@@ -49,7 +49,7 @@ An API response, Privy hash, or a submitted-looking RPC value is never considere
 
 Cron: **Jupiter Perps Position Monitor - Hourly** (`e08ffb7be83e`)
 
-It uses **MiniMax M2.7** plus a read-only position script. Every hour it emits a compact Telegram card while a position is open. It reports and escalates:
+It uses **MiniMax M2.7** plus a read-only position script. Every hour it emits a compact Telegram card while a position is open and writes the same authoritative snapshot to `state/perps_monitor_latest.json` and `state/perps_monitor_latest.md`. The supervisor, exit evaluator, price monitor, risk manager, news monitor, and profit-sweep evaluator receive its latest cron output through `context_from`; they must also read the shared state file when making a Perps conclusion. It reports and escalates:
 
 - Jupiter's positions API cannot be read;
 - a position is missing a full 100% TP or stop-loss;

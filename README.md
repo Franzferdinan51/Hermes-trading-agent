@@ -25,13 +25,16 @@ A bounded, policy-controlled crypto operations and trading agent for **Solana vi
 
 The operating objective is risk-adjusted profitability, not trade frequency. Candidates must show positive expected net edge after fees, spread, slippage, gas, funding, liquidity impact, transfer costs, and opportunity cost. A clean **HOLD** is preferable to a forced trade. Research is mandatory before every buy, but diligence is risk-proportionate: established liquid assets may use a lighter entry review, while speculative, illiquid, tokenized-stock, RWA, and unfamiliar assets require deeper verification.
 
-Current global ceilings are **3% maximum total/active risk** and **5% maximum daily realized loss**. These are ceilings, not targets; position size is determined by downside, liquidity, concentration, and confidence—not available balance.
+Current global ceilings are **3% maximum total/active risk** and **3% normal maximum daily realized loss**, with a **5% emergency hard stop** that disables new trading for the rest of the session. These are ceilings, not targets; position size is determined by downside, liquidity, concentration, and confidence—not available balance.
+
+**Fixed-capital operating constraint:** The currently funded wallets are the complete available trading capital. Do not assume or request additional deposits. Preserve native fee reserves and operate within verified current balances; internal transfers are balance reclassification, not new capital or profit.
 
 Capital is managed by bucket:
 
 - **Treasury/stable reserve:** operational liquidity and fee runway.
 - **Short-term/day trading:** current catalyst or repeatable edge, explicit exit and time stop.
-- **Long-term/core:** thesis, target, invalidation, tokenomics, and concentration review.
+- **Long-term/core:** thesis, target, invalidation, tokenomics, concentration review, and a productive-use plan where verified.
+- **Long-term utilization:** prefer verified staking, governance/voting, lending, or yield routes for idle long-term assets when expected net yield and strategic value justify the additional smart-contract, custody, oracle, lockup, depeg, and withdrawal risks. Keep a liquid reserve and do not deploy assets merely to chase APY.
 - **Long-term staking:** JupSOL-style yield versus depeg, validator, liquidity, and contract risk.
 - **Long-term earn/yield:** JL-USDC-style APY versus withdrawal, smart-contract, oracle, borrower, and depeg risk.
 - **Yield watchlist:** researched but unheld products such as JLP.

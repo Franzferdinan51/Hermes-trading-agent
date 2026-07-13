@@ -205,7 +205,8 @@
       "lending"
     ],
     "max_total_risk_pct_nav": 3.0,
-    "max_daily_realized_loss_pct_nav": 5.0,
+    "max_daily_realized_loss_pct_nav": 3.0,
+    "emergency_stop_daily_loss_pct_nav": 5.0,
     "require_current_balance_reconciliation": true,
     "require_exact_asset_identity": true,
     "require_independent_post_trade_verification": true,

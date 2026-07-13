@@ -39,6 +39,7 @@ Use single quotes around every argument passed through the shell. This preserves
 | `SECURITY` | Exploit, scam, wallet, or protocol threat | source, affected assets, severity, exposure, mitigation |
 | `WALLET` | Wallet changes, fee reserve, token-account observations | wallet scope, balance deltas, fee reserve, source, Perps state |
 | `READINESS` | Adapter/venue availability and blockers | venue, capability, test result, blocker, next verification |
+| `MEMORY` | Brain pruning or reflection lifecycle only | operation, safe aggregate counts, errors, next action |
 | `REPORT` | Consolidated daily or cross-venue report | NAV basis, positions, material events, decisions, open items |
 
 ## Cross-cron dependency rules

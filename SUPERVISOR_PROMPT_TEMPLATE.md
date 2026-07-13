@@ -145,6 +145,32 @@ Current Solana NAV is ~$92. At sub-$100 sizes:
 
 ---
 
+
+## Telegram Output Format (Mandatory)
+
+All cron jobs delivered to Telegram MUST use rich Markdown tables, task lists, and bold key terms. The output should render cleanly in Telegram with proper formatting.
+
+Structure:
+
+**🟡 [Job Name] — YYYY-MM-DD HH:MMZ**
+
+| Metric | Value |
+|---|---|
+| **NAV** | $XXX combined (Solana $XX · Base $XX) |
+| **Fee Reserve** | X.XXX SOL ✅ OK |
+| **Status** | 🟢/🟡/🔴/⚫ |
+| **Cycle** | read-only / execution |
+
+**Holdings** (Markdown table with | col | col |)
+**Opportunities** (Task list - [ ] / - [x])
+**Quotes** (Bullets with bold)
+**Decisions** (Task list with [x] HOLD/SELL)
+**Risk & Health** (✅ / ⚠️ / ❌ indicators)
+**Action:** one line
+**Next:** one line
+
+DO NOT use JSON dumps, long paragraphs, or repeated headings. Use real Markdown tables and task lists. Bold every key term.
+
 ## Telegram Report Format (one card per cycle)
 
 ```

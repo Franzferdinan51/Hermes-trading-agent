@@ -31,6 +31,19 @@ Before executing any swap, the supervisor selects the optimal input asset:
 
 Always preserve ≥0.02 SOL fee reserve. Never reduce JupSOL below the amount needed to keep SOL ≥0.02 SOL after unstaking. Log which base asset was chosen and why for every execution.
 
+## Scam Checks (mandatory before any non-core token buy)
+
+| Check | Rule |
+|---|---|
+| Mint authority | Verify creator/authority — ruggable mints (mint authority not revoked) flagged |
+| LP age/depth | Reject pools <24h old or <$1k depth unless thesis justifies it |
+| Holder concentration | Flag if top 5 wallets hold >80% supply |
+| Contract type | Reject if Token-2022 extensions include mint/freeze/pause authority unless explicitly authorized |
+| External checks | Flag if token on honeypot/rug-check lists or has known exploit history |
+| Contract immutability | Immutable preferred; only allow with explicitly authorized immutable upgrades |
+| Exit path | Must have ≥1 Jupiter-routable pair with >$500 24h volume |
+| Supervisor log | Log which checks passed vs waived with justification |
+
 ## Shared readiness cron
 
 Hermes job: `Multi-Platform Readiness and MoA Monitor`

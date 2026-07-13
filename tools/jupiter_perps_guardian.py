@@ -11,6 +11,7 @@ orders remain the first-line on-chain protection.
 """
 import argparse
 import json
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -114,6 +115,16 @@ def main(report=False):
         state_dir = ROOT / "state"
         state_dir.mkdir(exist_ok=True)
         (state_dir / "perps_monitor_latest.json").write_text(json.dumps(payload, indent=2) + "\n")
+        # Persist an append-only PERPS handoff even if the LLM layer is unavailable.
+        facts = json.dumps({"open_positions": payload["open_positions"], "positions": snapshots}, separators=(",", ":"))
+        subprocess.run([
+            sys.executable, str(ROOT / "tools" / "cron_handoff.py"), "append",
+            "--job", "Jupiter Perps Position Monitor - Hourly",
+            "--tag", "PERPS", "--status", "WATCH" if positions else "OK",
+            "--summary", "Hourly Jupiter Perps position snapshot.",
+            "--details", "Read-only live position, protection, trigger-distance, and liquidation state.",
+            "--facts", facts,
+        ], check=True, capture_output=True, text=True, timeout=20)
         lines = [
             "# Jupiter Perps Monitor State",
             "",

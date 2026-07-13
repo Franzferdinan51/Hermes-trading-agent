@@ -78,6 +78,10 @@ Complete reference for all 27 scheduled jobs that power the Hermes Trading Agent
 ### 6. Macro Intelligence
 - **daily-defcon-scan** — DEFCON threat levels (affects crypto risk)
 
+## Cross-Cron Shared Handoff
+
+All crypto-facing jobs read recent tagged records and append a UTC-dated result to `state/cron_handoff.md` and `state/cron_handoff.jsonl`. See [`CRON_HANDOFF_PROTOCOL.md`](CRON_HANDOFF_PROTOCOL.md) for required tags, facts, and history rules.
+
 ## Non-Spot Strategies
 
 | Strategy | Status | Notes |

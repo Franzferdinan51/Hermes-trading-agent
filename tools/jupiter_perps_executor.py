@@ -458,12 +458,16 @@ def main():
         positions = get_positions()
         print(f"Open positions: {len(positions)}")
         for p in positions:
+            collateral = float(p.get('collateralUsd', 0)) / 1e6
+            pnl = float(p.get('pnlAfterFeesUsd', 0)) / 1e6
+            equity = collateral + pnl
             print(f"  {p.get('asset')}: {p.get('side')} {p.get('leverage')}x "
                   f"size=${float(p.get('sizeUsd', 0))/1e6:.2f} "
+                  f"collateral=${collateral:.2f} equity=${equity:.2f} "
                   f"entry=${float(p.get('entryPriceUsd', 0))/1e6:.2f} "
                   f"mark=${float(p.get('markPriceUsd', 0))/1e6:.2f} "
                   f"liq=${float(p.get('liquidationPriceUsd', 0))/1e6:.2f} "
-                  f"pnl=${float(p.get('pnlAfterFeesUsd', 0))/1e6:.2f}")
+                  f"pnl=${pnl:.2f}")
 
     elif args.cmd == "markets":
         for symbol, mint in JUPITER_PERPS_MINTS.items():

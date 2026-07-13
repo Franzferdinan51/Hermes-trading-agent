@@ -72,6 +72,15 @@ Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and p
    a) Buy-entry gate (`buy-evaluation` / mandatory pre-buy research)
       - Never promote a buy unless exact asset identity, legitimacy, liquidity, costs, exit path, jurisdiction/compliance, and positive expected net edge are verified
       - Unknown, illiquid, speculative, or unverified assets default to RESEARCH MORE or DO NOT BUY
+      - **SCAM CHECKS (mandatory for any non-core token buy):**
+          1. Mint authority: verify the mint has a verifiable creator/authority — ruggable mints (mint authority not revoked, owner key live) are flagged
+          2. Liquidity pool age and depth: reject newly created pools (<24h) or pools with <$1k depth unless thesis explicitly justifies it
+          3. Top holder concentration: if top 5 wallets hold >80% of supply, flag as high risk and require explicit thesis to override
+          4. Contract type: reject if Token-2022 extensions include mint/hfreez/pause authority unless supervisor explicitly authorizes controlled exposure
+          5. External audit / Fortress-style天道 check: flag if token appears on honeypot/rug-check lists or has known exploit history
+          6. No违背 Darwinia /RugCheck-style red flags: immutable contract preferred, or explicitly authorized immutable upgrades only
+          7. Exit path: must have ≥1 Jupiter-routable pair with >$500 24h volume — no buying tokens that cannot be sold
+          8. Supervisor must log which scam checks passed and which (if any) were waived with justification
    b) Solana/Jupiter scan — prices, quotes, liquidity, route quality, price impact, slippage, fees, priority gas, Jupiter dry-run candidates
    c) Coinbase CDP Base scan — USDC balance, WETH quote, net edge after fees, ETH gas cost, slippage, simulation, CDP SDK availability
    d) PancakeSwap Base/Solana scan — quote discovery, route quality, fees, readiness blockers (execution blocked but research enabled)

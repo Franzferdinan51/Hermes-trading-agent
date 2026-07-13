@@ -4,7 +4,7 @@
   "global": {
     "active_cap_usd": 50.0,
     "active_cap_mode": "adaptive_staged_baseline",
-    "active_cap_note": "Adaptive staged baseline capped at $50; live snapshot 2026-07-13T16:00:00Z. Preserve 0.02 SOL fee reserve. Live: SOL 0.547696714, USDC 24.594323, JUP 76.920526, JupSOL 0.07912496, cbBTC 0.00005986, JL-USDC 0.002481. NAV ~$92.09. JL-USDC: 9.93 jlUSDC was withdrawn 2026-07-13 ~16:05Z. No unexplained inbound SOL pending.",
+    "active_cap_note": "Adaptive staged baseline capped at $50; live snapshot 2026-07-13T17:00:00Z. Preserve 0.02 SOL fee reserve. Live: SOL 0.547696714, USDC 24.594323, JUP 76.920526, JupSOL 0.07912496, cbBTC 0.00005986, JL-USDC 0.002481. NAV ~$91.86. JL-USDC: 9.93 jlUSDC withdrawn 2026-07-13 ~16:05Z \u2192 USDC; 0.002481 dust remains. SOL history: 0.7477 (pre-trade) \u2192 0.5477 (current) = ~0.2 SOL used for diversification trades + gas fees; no unexplained SOL gap. All non-spot strategies (perps, predictions, market_scanner, macro_monitor) remain DORMANT.",
     "max_notional_per_trade_pct": 0.25,
     "fee_reserve_sol": 0.02,
     "max_risk_per_trade_pct": 1.0,

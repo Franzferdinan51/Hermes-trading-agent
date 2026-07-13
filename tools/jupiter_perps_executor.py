@@ -115,8 +115,8 @@ def request_increase_position(
         raise ValueError(f"Unsupported asset: {asset}. Must be one of {list(JUPITER_PERPS_MINTS)}")
     if side.lower() not in ("long", "short"):
         raise ValueError(f"Invalid side: {side}. Must be 'long' or 'short'.")
-    if leverage < 1 or leverage > 100:
-        raise ValueError(f"Invalid leverage: {leverage}. Must be 1-100x.")
+    if leverage <= 1.1 or leverage > 100:
+        raise ValueError(f"Invalid leverage: {leverage}. Jupiter Perps requires leverage greater than 1.1x and no more than 100x.")
 
     # sizeUsdDelta is in micro-units (1e6)
     size_usd_delta = int(size_usd * 1_000_000)

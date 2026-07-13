@@ -23,7 +23,7 @@ Complete reference for all 27 scheduled jobs that power the Hermes Trading Agent
 | 20 | Multi-Platform Readiness | every 2h | M2.7-Pro | Coinbase/Robinhood/PancakeSwap status |
 | 21 | Jupiter Sell/Exit Evaluator | every 1h | M3 | Sell triggers |
 | 22 | Portfolio Profit Sweep | daily 6 PM ET | M3 | Sweep calculation |
-| 23 | Daily Multi-Platform Report | daily | M2.7 | End-of-day NAV + activity |
+| 23 | Daily Multi-Platform Report | daily | M2.7 | End-of-day timestamp-locked NAV + activity |
 | 24 | DuckBot Crypto Trading | every 2h | M3 | Solana trading scan |
 | 25 | DuckBot Profit Sweep | daily 6 PM ET | M3 | Solana sweep |
 | 26 | DuckBot Wallet Poller | every 30 min | M2.7 | Balance monitoring |
@@ -80,7 +80,7 @@ Complete reference for all 27 scheduled jobs that power the Hermes Trading Agent
 
 ## Cross-Cron Shared Handoff
 
-All crypto-facing jobs read recent tagged records and append a UTC-dated result to `state/cron_handoff.md` and `state/cron_handoff.jsonl`. See [`CRON_HANDOFF_PROTOCOL.md`](CRON_HANDOFF_PROTOCOL.md) for required tags, facts, and history rules.
+All crypto-facing jobs read recent tagged records and append a UTC-dated result to `state/cron_handoff.md` and `state/cron_handoff.jsonl`. See [`CRON_HANDOFF_PROTOCOL.md`](CRON_HANDOFF_PROTOCOL.md) for required tags, facts, and history rules. The daily report's live-balance, quote-unit, Base-decimal, and Perps-equity requirements are in [`PORTFOLIO_REPORT_DATA_INTEGRITY.md`](PORTFOLIO_REPORT_DATA_INTEGRITY.md).
 
 ## Non-Spot Strategies
 

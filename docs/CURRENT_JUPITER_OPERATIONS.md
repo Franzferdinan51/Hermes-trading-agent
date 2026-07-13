@@ -1,21 +1,20 @@
 # Current Jupiter Trading Operations
 
-**Canonical operational status:** 2026-07-11 13:45 EDT  
-**Active scope:** isolated Privy Solana wallet + Jupiter only  
+**Canonical operational status:** 2026-07-13 UTC  
+**Active scope:** isolated Privy Solana wallet + Jupiter spot and Jupiter Perps  
 **Wallet:** `<SOLANA_WALLET_ADDRESS>`
 
 This document is the current operational source of truth. Older Cosmos/Osmosis and Keplr material remains historical/reference unless the owner explicitly reactivates it.
 
 ## 1. Safety and authority boundary
 
-- Autonomous execution is limited to policy-bounded Jupiter spot swaps through `tools/privy_jupiter_executor.py`.
-- The executor defaults to dry-run. Signing and broadcast require `--execute`.
-- Allowlisted mints: SOL, USDC, JUP, cbBTC, and JupSOL are hard-coded in `tools/privy_jupiter_executor.py`.
-- Speculative mints (currently ANSEM) are hard-coded for exit-only.
-- **Permissive dynamic allowlist** is enabled: the supervisor can autonomously add any Jupiter-routable mint to `state/active_allowlist.json` for one trade, with a 6h TTL, a per-mint notional cap, mandatory Token-2022 extension inspection, liquidity evidence, a thesis card, and single-use consumption. See `tools/dynamic_allowlist.py`, `tools/dynamic_allowlist_cli.py`, and `tests/test_dynamic_allowlist.py`. Hard-coded safety rules (approved programs, fee-payer check, Jupiter-router requirement, transaction decoding, simulation) are never relaxed.
-- Hard controls: one-trade filesystem lock, emergency-stop marker, fresh quote, wallet fingerprint, **active cap from `state/position_rules.json` (`active_cap_usd`, hard floor $50)**, per-trade notional ratio from state (`max_notional_per_trade_pct`, hard floor 25%), **3% NAV maximum total risk**, **5% daily realized-loss limit**, ≤0.5% price impact, ≤100 bps slippage, 0.02 SOL fee reserve, finalized transaction with `err:null`, minimum-output verification, and post-trade reconciliation.
-- Dynamic allowlist controls: per-mint notional cap from the supervisor entry, max 6h TTL by default (24h hard cap), single-use consumption on successful trade, kill switch via `python3 tools/dynamic_allowlist_cli.py halt <reason>`.
-- Prohibited: withdrawals, treasury sweeps, arbitrary contracts, unknown mints/programs, and unverified bridges; verified allowlisted bridge routes require the global transfer policy, exact source/destination checks, positive net edge, finality, supervisor authorization, and reconciliation. Leverage/perps, wallet-permission changes, and legacy custom signers remain prohibited.
+- Autonomous spot execution uses `tools/privy_jupiter_executor.py`; Jupiter Perps execution uses `tools/jupiter_perps_executor.py`.
+- Both executors default to dry-run. Signing and broadcast require their explicit execution path.
+- Spot token eligibility is route-based: a candidate must have a verified Jupiter route and pass policy/scam checks. The old hard-coded mint allowlist is not the tradability authority.
+- `cbBTC` is a long-term BTC-diversification holding, not a prohibited or dust-only asset. Its wrapped-asset custody/reserve/redemption risks must be reviewed before increasing allocation.
+- Hard controls: one-trade filesystem lock, emergency-stop marker, fresh quote, wallet fingerprint, state-defined caps, per-trade notional ratio, SOL fee reserve, finalized transaction with `err:null`, minimum-output verification, and post-trade reconciliation.
+- Jupiter Perps is active for SOL, WBTC, and ETH. New or changed Perps positions require policy-valid leverage/exposure, full 100% TP and stop-loss, Privy owner signature, Jupiter co-sign/broadcast, finalized Solana verification, and positions-API verification.
+- Prohibited: withdrawals, treasury sweeps, arbitrary contracts, unknown programs, and unverified bridges. No Hyperliquid route is permitted.
 - Non-spot products such as Earn/Lend/Stake/LP/JLP/predictions/tokenized assets require feature-specific research and risk gates. Current held JL-USDC is monitored; the generic spot executor does not automate deposits or withdrawals.
 - Mandatory pre-buy research applies to every coin, token, and tokenized asset before any buy consideration: exact identity, legitimacy, liquidity, costs, exit path, jurisdiction/compliance, and expected net edge must be verified first.
 - Small speculative coins are allowed in a separate speculation bucket. Default limits are 2% of verified NAV per speculative position and 5% aggregate speculative exposure, further constrained by the 3% NAV maximum-total-risk rule.

@@ -38,7 +38,19 @@ Use Hermes native `/moa` for the bounded advisory synthesis before promoting any
 
 Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and predictions are all authorized profit-seeking strategy classes. A candidate is never rejected merely because it is non-spot. Each requires a verified venue-specific executor/contract path, positive net expected value after all costs, strategy-specific risk limits (including impermanent-loss, liquidation/funding, or maximum-loss controls as applicable), simulation when available, and supervisor authorization.
 
-### Allowed execution paths
+#
+## Small Portfolio Reality
+
+Current Solana NAV is ~$92. At sub-$100 sizes:
+- Yield strategies produce <$5/yr in absolute terms (e.g., 4.25% JL-USDC supply on $24.59 USDC = ~$1.04/yr)
+- Trading opportunities exist but notionals are too small to clear fees after slippage
+- Do NOT recommend forced activity to manufacture yield at this size
+- Always state estimated absolute $ yield AND % APY together, so the owner understands scale
+- Highest verified yield for idle USDC: JL-USDC supply at 4.25% APY (DefiLlama pool 52bd72a7, TVL $423.6M); deposit requires supervisor authorization
+
+## Authorized Execution Paths
+
+## Allowed execution paths
 
 1. **Jupiter Solana spot swaps** — `tools/privy_jupiter_executor.py` with `--execute`
 2. **Coinbase CDP Base USDC→WETH** — `node tools/cdp_base_executor.mjs --amount N --slippage-bps N --execute` (≤$100 USDC, ≤100 bps slippage, fresh liquidity-available quote with simulationIncomplete=false, supervisor authorization)

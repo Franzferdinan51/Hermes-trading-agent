@@ -70,7 +70,7 @@ Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and p
    - Verify Solana on-chain balances match `state/position_rules.json` snapshot (native SOL + SPL + Token-2022)
    - Verify Base Coinbase CDP balances via `node tools/cdp_base_balance.mjs` (official SDK, primary source)
    - If CDP SDK succeeds, raw RPC 403 is labeled as RPC limitation only — do not treat as zero Coinbase balance
-   - If any material mismatch > 0.5% NAV → HOLD, alert, do not trade
+   - If any material mismatch > 0.5% NAV → **FIX IT IMMEDIATELY**: use the terminal tool to patch `state/position_theses.json` and `state/position_rules.json` with the authoritative on-chain values. Re-read both files to confirm the write succeeded. Close the gap in the same cycle; never merely flag it and continue with stale data.
 
 3. SCAN OPPORTUNITIES
    a) Buy-entry gate (`buy-evaluation` / mandatory pre-buy research)
@@ -125,7 +125,7 @@ Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and p
    - Balance reconciliation (input spent, output received ≥ minOut)
    - Append ledger entry with `thesis_id`
    - Run profit allocation advisory (50/25/25)
-   - Update `state/position_rules.json` balances snapshot
+   - Update both `state/position_rules.json` balances snapshot AND `state/position_theses.json` holdings with authoritative on-chain values
 
 7. REPORT
    - One compact Telegram card per cycle (see format below)

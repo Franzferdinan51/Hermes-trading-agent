@@ -24,8 +24,16 @@ ROOT = Path(__file__).resolve().parent.parent
 STATE = ROOT / "state"
 RULES_FILE = STATE / "position_rules.json"
 
-JUPITER_PERPS_API = "https://api.jup.ag/perps/v1"
+JUPITER_PERPS_API = "https://perps-api.jup.ag/v2"
 DRIFT_API = "https://api.drift.trade"  # alternative
+
+# Jupiter Perps v2 only supports 3 markets (as of 2026-07-13)
+# Mints verified from perps-api.jup.ag/v2/market-stats enum
+JUPITER_PERPS_MINTS = {
+    "SOL": "So11111111111111111111111111111111111111112",
+    "WBTC": "3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh",
+    "ETH": "7vfCXTUXx5WJV5JADk17DUJ4ksgau7utNKj4b963voxs",
+}
 
 # Solana RPC
 RPC_URL = "https://api.mainnet-beta.solana.com"
@@ -124,39 +132,57 @@ class PerpsClient:
         self.api_base = api_base
 
     def fetch_markets(self) -> list[PerpMarket]:
-        try:
-            data = _http_json(f"{self.api_base}/markets")
-            markets = []
-            for m in data.get("markets", []):
+        """Fetch Jupiter Perps market stats for all 3 supported markets (SOL, WBTC, ETH).
+
+        The Jupiter v2 API does not have a /markets list endpoint — only /market-stats
+        per individual mint. We enumerate the 3 known mints and collect their stats.
+        """
+        markets = []
+        for mint in JUPITER_PERPS_MINTS.values():
+            try:
+                data = _http_json(f"{self.api_base}/market-stats?mint={mint}")
+                # Map symbol from mint
+                symbol = next((k for k, v in JUPITER_PERPS_MINTS.items() if v == mint), "UNKNOWN")
                 markets.append(PerpMarket(
-                    market_index=m["marketIndex"],
-                    symbol=m["symbol"],
-                    base_mint=m["baseMint"],
-                    max_leverage=m.get("maxLeverage", 10),
-                    min_order_size=m.get("minOrderSize", 0.01),
-                    tick_size=m.get("tickSize", 0.001),
-                    funding_rate=m.get("fundingRate", 0.0),
-                    next_funding_ts=m.get("nextFundingTimestamp", 0),
-                    oracle_price=m.get("oraclePrice", 0.0),
-                    mark_price=m.get("markPrice", 0.0),
-                    open_interest=m.get("openInterest", 0.0),
-                    is_active=m.get("isActive", True),
+                    market_index=hash(mint) % 1000,
+                    symbol=symbol,
+                    base_mint=mint,
+                    max_leverage=100,  # Jupiter Perps allows up to 100x on most pairs
+                    min_order_size=0.01,
+                    tick_size=0.001,
+                    funding_rate=0.0,  # Not in market-stats; need separate endpoint
+                    next_funding_ts=0,
+                    oracle_price=float(data.get("price", 0)),
+                    mark_price=float(data.get("price", 0)),
+                    open_interest=float(data.get("volume", 0)),
+                    is_active=True,
                 ))
-            return markets
-        except Exception as e:
-            print(f"PerpsClient.fetch_markets error: {e}")
-            return []
+            except Exception as e:
+                print(f"PerpsClient.fetch_markets error for {mint}: {e}")
+        return markets
 
     def fetch_funding_rates(self) -> dict[str, float]:
-        try:
-            data = _http_json(f"{self.api_base}/funding-rates")
-            return {m["symbol"]: m.get("fundingRate", 0.0) for m in data.get("markets", [])}
-        except Exception:
-            return {}
+        """Fetch funding rates from Jupiter Perps v2.
+
+        The v2 API does not expose a public funding-rates endpoint — funding is
+        computed at position level on Jupiter. For now, we return zeros; the
+        funding rate will be inferred from position metadata when positions exist.
+        """
+        # Jupiter v2 doesn't have a public funding rate endpoint
+        # Funding is implicit in the position's borrowFeesUsd and totalFeesUsd
+        return {symbol: 0.0 for symbol in JUPITER_PERPS_MINTS.keys()}
 
     def fetch_orderbook(self, symbol: str) -> dict | None:
+        """Fetch orderbook for a symbol.
+
+        Jupiter v2 does not expose orderbook publicly — prices are derived from
+        the JLP pool. The market-stats endpoint provides the current mark price.
+        """
         try:
-            return _http_json(f"{self.api_base}/orderbook?symbol={symbol}")
+            mint = JUPITER_PERPS_MINTS.get(symbol.upper())
+            if not mint:
+                return None
+            return _http_json(f"{self.api_base}/market-stats?mint={mint}")
         except Exception:
             return None
 

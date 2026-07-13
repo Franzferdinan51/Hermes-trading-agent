@@ -2,7 +2,7 @@
 
 A bounded, policy-controlled crypto operations and trading agent for **Solana via Jupiter** and **Base via Coinbase CDP**. It combines live wallet reconciliation, mandatory pre-buy research, risk-proportionate entry evaluation, sell/exit review, profitability analysis, and platform-local execution. Guardrails include exact asset identity, fresh quotes, liquidity and cost checks, transaction decoding, simulation, finalized settlement, independent reconciliation, emergency stop, and one-trade locking.
 
-> **Current status:** Jupiter/Solana spot operations and bounded Coinbase CDP Base `USDC→WETH` are the active execution paths. Tokenized stocks/xStocks are research-enabled but execution-gated. PancakeSwap and other venues remain separately gated.
+> **Current status:** Jupiter/Solana, Coinbase Advanced Trade/CDP Base, and PancakeSwap Base/Solana are first-tier opportunity venues. Robinhood Agentic is prepared as an additional first-tier venue after authentication and dedicated-account onboarding. Active execution remains route-specific: Jupiter bounded spot and Coinbase CDP Base `USDC→WETH`; PancakeSwap, Robinhood, stocks/xStocks, and other products remain execution-gated until their exact adapters pass verification.
 
 > This repository is a fork-and-configure template. Replace example wallet addresses before using it. Never commit API keys, wallet secrets, private keys, `.env` files, or runtime evidence/logs.
 
@@ -13,10 +13,11 @@ A bounded, policy-controlled crypto operations and trading agent for **Solana vi
 - **Buy evaluation:** Every buy requires the `buy-evaluation` procedure: mandatory, risk-proportionate research, exact identity, liquidity, cost, exit-path, jurisdiction, and positive-net-edge checks. Decisions are `BUY`, `DO NOT BUY`, or `RESEARCH MORE`.
 - **Tokenized stocks/xStocks:** Research and monitoring enabled; execution remains gated per asset until mint, issuer/backing, rights, redemption, liquidity, custody, settlement, and jurisdiction checks pass.
 - **Authorized profit strategies:** spot, earn/yield, liquidity provision, staking, lending, and other strategy classes only when their venue-specific executor and risk gates are verified. Leverage/perps, bridges, and predictions remain separately gated.
-- **Primary venues:** Jupiter/Solana and PancakeSwap (Base/Solana). The supervisor compares only verified routes and selects the better risk-adjusted net outcome.
-- **First fallback:** Coinbase CDP on Base when a primary venue is unavailable, unsupported, or materially worse after all costs.
-- **Secondary fallbacks:** Avantis, Robinhood, SunSwap, and TronLink remain independently gated; none may be used until its platform-specific readiness and policy requirements are met.
-- **Not selected:** Aerodrome is explicitly disabled.
+- **Active first-tier venues:** Jupiter/Solana, Coinbase Advanced Trade/CDP Base, and PancakeSwap Base/Solana are compared equally on every relevant scan. Robinhood Agentic joins the first-tier comparison after authentication and dedicated-account onboarding. The system evaluates crypto, equities/stocks, tokenized stocks/xStocks, staking, Earn, lending, LP, yield, transfers, and other supported products; each product remains subject to exact identity, live balance, liquidity, cost, route, preview/simulation, risk, and reconciliation gates.
+- **Coinbase/CDP:** Base balances use the official CDP SDK probe `tools/cdp_base_balance.mjs`; the bounded CDP Base executor remains `USDC→WETH` until additional routes are separately verified.
+- **PancakeSwap:** Base and Solana are first-tier research/quote venues; execution remains blocked until their exact adapters, simulations, settlement verification, and reconciliation pass.
+- **Robinhood:** Agentic/MCP is prepared but remains onboarding-gated until desktop authentication and the dedicated Agentic account are verified. Read access covers all Robinhood accounts; trading is restricted to the dedicated Agentic account.
+- **No fixed venue fallback:** compare all first-tier venues using fresh data and select the best verified risk-adjusted net outcome. Do not over-hoard idle capital when a positive-net-edge opportunity clears the gates, and do not force activity when it does not.
 - **Legacy (do not use):** Keplr / Cosmos / Osmosis workflows are preserved under
   `legacy/` for the historical record only. They are explicitly deprecated and ignored
   by the active code path.
@@ -56,6 +57,7 @@ The sell/exit evaluator classifies positions as `HOLD`, `WATCH`, `SELL-READY`, o
 |------|---------|
 | `tools/privy_jupiter_executor.py` | The bounded executor. Hard-coded mint allowlist, dynamic per-mint runtime allowlist, transaction decoding, simulation, fee-payer check, Jupiter-router enforcement, minimum-output verification, post-trade balance reconciliation, single-use consumption of dynamic entries. |
 | `tools/cdp_base_executor.mjs` | Official Coinbase CDP SDK Base executor. Dry-run by default, USDC→WETH allowlist, Permit2 approval handling, gas precheck, slippage/notional caps, idempotency, receipt and balance verification. |
+| `tools/cdp_base_balance.mjs` | Read-only official Coinbase CDP SDK probe for live Base ETH, USDC, WETH, and token balances; preferred before raw RPC fallback. |
 | `tools/policy_engine.py` | The preflight guard. Numeric validation, quote-age cap, price-impact cap, slippage cap, notional/risk ratios (sourced from `state/position_rules.json`), one-trade filesystem lock, emergency-stop marker. |
 | `tools/dynamic_allowlist.py` | Runtime per-mint allowlist managed by the supervisor. TTL cap, per-mint notional cap, mandatory Token-2022 extension report, single-use consumption, kill switch. |
 | `tools/dynamic_allowlist_cli.py` | Operator CLI for the dynamic allowlist (`halt`, `resume`, `status`, `list`, `show`, `purge-expired`). |
@@ -212,7 +214,7 @@ The autonomous supervisor is not limited to reviewing pre-approved `Ready` cards
 
 **Long-hold utilization:** Every material long-term or extra-long-term holding—not only USDC—must be evaluated for verified staking, liquid staking, governance/voting, lending, Earn, LP/JLP, vault, or other productive-use routes. This includes SOL, JUP, BTC/cbBTC, liquid-staking assets, LP/LST receipts, governance assets, and other verified holdings where applicable. Compare net yield or strategic value against lockup, withdrawal, smart-contract, oracle, validator, borrower/liquidation, custody, depeg, liquidity, and opportunity costs. Preserve liquidity and do not deploy automatically.
 
-The supervisor may consider day trades and multiple simultaneous positions when justified. There is no arbitrary position-count cap; aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity are the constraints. Direct SOL-funded routes may be evaluated when the SOL fee reserve is preserved; zero USDC is not an automatic blocker.
+The supervisor may consider day trades, multiple simultaneous positions, **adding to existing positions, and reducing concentration through diversification** when justified. Diversification should seek lower portfolio fragility across asset, protocol, custody, and strategy exposures—not merely swap SOL into another highly correlated Solana asset. An expansion or rebalance requires a refreshed thesis, current price/quote, positive incremental net edge or measurable risk-reduction benefit, defined invalidation, maximum incremental loss, concentration check, liquidity, and a documented reason the capital improves expected risk-adjusted return. There is no arbitrary position-count cap; aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity are the constraints. Direct SOL-funded routes may be evaluated when the SOL fee reserve is preserved; zero USDC is not an automatic blocker.
 
 Only verified bounded routes may execute, and every action still requires positive net edge after costs, current balance reconciliation, exact asset identity, route authorization, simulation/preflight, finalized receipt verification, and post-trade reconciliation.
 

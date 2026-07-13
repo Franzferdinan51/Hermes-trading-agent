@@ -8,7 +8,12 @@ Jupiter/Solana monitoring, reconciliation, research, and the bounded supervisor 
 
 Robinhood Agentic/MCP, TronLink/TRON, SunSwap/SUN MCP, PancakeSwap Base/Solana, and Avantis/Base are registered in the wrapper but are not fully verified for execution. They must remain `HOLD`/disabled in scheduled work. Coinbase/Base is the sole exception: only its allowlisted CDP USDC→WETH executor is enabled.
 
-## Supervisor context handoff
+## First-tier venue policy
+
+Every relevant scheduled workflow compares Jupiter/Solana, Coinbase Advanced Trade/CDP Base, and PancakeSwap Base/Solana as equal first-tier venues. Robinhood Agentic is included after authentication and dedicated-account onboarding. The scan covers crypto, equities/stocks, tokenized stocks/xStocks, staking, Earn, lending, LP, yield, transfers, and other supported products. It refreshes balances, prices, quotes, liquidity, fees, positions, P&L, readiness, and exit paths before ranking opportunities. A positive-net-edge opportunity with acceptable risk should not be rejected merely because capital is available; unsupported routes, stale data, poor liquidity, and missing reconciliation remain HOLD blockers.
+
+Coinbase Base balance verification uses `tools/cdp_base_balance.mjs` and the official Coinbase CDP SDK before raw RPC fallback. An RPC HTTP 403 is labeled as an RPC-source limitation when the CDP probe succeeds, not as a zero Coinbase balance.
+
 
 The autonomous supervisor receives the latest outputs from market collection, wallet reconciliation, multi-platform readiness, research scans, portfolio risk, yield/staking diligence, news, sell/exit, and profit-sweep jobs. It may independently create and evaluate candidates rather than waiting for a pre-approved Ready card. Day trading and multiple simultaneous positions are permitted when aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity support them; there is no arbitrary position-count cap. Zero USDC is not an automatic blocker when a direct SOL-funded route preserves the native fee reserve.
 

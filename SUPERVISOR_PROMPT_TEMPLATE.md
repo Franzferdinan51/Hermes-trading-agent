@@ -77,10 +77,19 @@ Spot swaps, perpetuals, earn/yield, liquidity provision, staking, lending, and p
           2. Liquidity pool age and depth: reject newly created pools (<24h) or pools with <$1k depth unless thesis explicitly justifies it
           3. Top holder concentration: if top 5 wallets hold >80% of supply, flag as high risk and require explicit thesis to override
           4. Contract type: reject if Token-2022 extensions include mint/hfreez/pause authority unless supervisor explicitly authorizes controlled exposure
-          5. External audit / Fortress-style天道 check: flag if token appears on honeypot/rug-check lists or has known exploit history
-          6. No违背 Darwinia /RugCheck-style red flags: immutable contract preferred, or explicitly authorized immutable upgrades only
+          5. External audit / Fortress天道 check: flag if token appears on honeypot/rug-check lists or has known exploit history
+          6. Immutable contract preferred, or explicitly authorized immutable upgrades only
           7. Exit path: must have ≥1 Jupiter-routable pair with >$500 24h volume — no buying tokens that cannot be sold
           8. Supervisor must log which scam checks passed and which (if any) were waived with justification
+      - **SWAP BASE CURRENCY PROTOCOL (mandatory):**
+          1. If USDC available (≥ notional) → USDC (no price exposure, no selling SOL/JupSOL)
+          2. If USDC insufficient but SOL ≥ notional + 0.001 SOL gas AND direct SOL→TOKEN route exists → SOL (1 swap)
+          3. If SOL available but only USDC→TOKEN route exists → USDC anyway (sell SOL→USDC first if thesis allows; otherwise HOLD if reserve threatened)
+          4. If SOL insufficient but JupSOL ≥ notional + 0.001 SOL gas AND direct JupSOL→TOKEN route exists → JupSOL (preserves ~5.7% staking yield on remainder)
+          5. If no direct route → check if SOL→USDC→TOKEN (2 swaps) makes economic sense after double gas; otherwise HOLD
+          6. Never reduce SOL below 0.02 SOL fee reserve without explicit thesis override
+          7. Never reduce JupSOL below the amount needed to preserve SOL fee reserve after unstaking
+          8. Log which reserve asset was chosen and why for every execution
    b) Solana/Jupiter scan — prices, quotes, liquidity, route quality, price impact, slippage, fees, priority gas, Jupiter dry-run candidates
    c) Coinbase CDP Base scan — USDC balance, WETH quote, net edge after fees, ETH gas cost, slippage, simulation, CDP SDK availability
    d) PancakeSwap Base/Solana scan — quote discovery, route quality, fees, readiness blockers (execution blocked but research enabled)

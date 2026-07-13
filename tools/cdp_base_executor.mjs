@@ -30,13 +30,25 @@ export function parseArgs(argv) {
   return out;
 }
 
+// Both directions now allowlisted: USDC -> WETH and WETH -> USDC
+const ALLOWED_PAIRS = [
+  { from: 'USDC', to: 'WETH' },
+  { from: 'WETH', to: 'USDC' },
+];
+
+function validateAllowedPair(from, to) {
+  for (const p of ALLOWED_PAIRS) {
+    if (p.from === from && p.to === to) return p;
+  }
+  throw new Error(`Allowlisted pairs are: ${ALLOWED_PAIRS.map(p => `${p.from} -> ${p.to}`).join(', ')}. Got: ${from} -> ${to}`);
+}
+
 export function validateRequest(args) {
-  if (args.from !== 'USDC' || args.to !== 'WETH') throw new Error('Only USDC -> WETH is allowlisted initially');
-  if (!args.amount || !/^\d+(\.\d{1,6})?$/.test(args.amount)) throw new Error('Amount must be a positive USDC decimal');
+  const pair = validateAllowedPair(args.from, args.to);
   const atomic = BigInt(Math.round(Number(args.amount) * 1_000_000));
-  if (atomic <= 0n || atomic > MAX_NOTIONAL_USDC) throw new Error('Amount exceeds bounded USDC notional cap');
+  if (atomic <= 0n || atomic > MAX_NOTIONAL_USDC) throw new Error('Amount exceeds bounded notional cap ($100 USDC)');
   if (!Number.isInteger(args.slippageBps) || args.slippageBps < 0 || args.slippageBps > 100) throw new Error('Slippage must be 0-100 bps');
-  return { ...args, amountAtomic: atomic };
+  return { ...args, amountAtomic: atomic, fromAddress: pair.from === 'USDC' ? ADDRESSES.usdc : ADDRESSES.weth, toAddress: pair.to === 'WETH' ? ADDRESSES.weth : ADDRESSES.usdc };
 }
 
 function loadSecrets() {
@@ -56,22 +68,22 @@ export async function run(args, deps = {}) {
   const request = validateRequest(args);
   const cdp = deps.cdp || new CdpClient(loadSecrets());
   const account = deps.account || await cdp.evm.getAccount({ address: ADDRESSES.wallet });
-  const quote = await account.quoteSwap({ network: 'base', toToken: ADDRESSES.weth, fromToken: ADDRESSES.usdc, fromAmount: request.amountAtomic, slippageBps: request.slippageBps });
+  const quote = await account.quoteSwap({ network: 'base', toToken: request.toAddress, fromToken: request.fromAddress, fromAmount: request.amountAtomic, slippageBps: request.slippageBps });
   if (!quote.liquidityAvailable) throw new Error('CDP reports no Base swap liquidity');
-  const summary = { venue: 'coinbase_cdp_trade_api', network: 'base', from: request.amount, fromToken: ADDRESSES.usdc, toToken: ADDRESSES.weth, toAmount: quote.toAmount?.toString(), minToAmount: quote.minToAmount?.toString(), issues: quote.issues || null, execute: request.execute };
+  const summary = { venue: 'coinbase_cdp_trade_api', network: 'base', from: request.amount, fromToken: request.fromAddress, toToken: request.toAddress, toAmount: quote.toAmount?.toString(), minToAmount: quote.minToAmount?.toString(), issues: quote.issues || null, execute: request.execute };
   if (!request.execute) return summary;
   const allowance = quote.issues?.allowance ?? quote.issues?.allowanceIssue;
   if (allowance && BigInt(allowance.currentAllowance ?? 0) < request.amountAtomic) {
     const client = deps.publicClient || publicClient();
     const gas = await client.getBalance({ address: ADDRESSES.wallet });
-    if (gas < 1000000000000n) throw new Error('Insufficient Base ETH for USDC Permit2 approval and swap');
+    if (gas < 1000000000000n) throw new Error('Insufficient Base ETH for Permit2 approval and swap');
     const data = encodeFunctionData({ abi: ERC20_APPROVE_ABI, functionName: 'approve', args: [ADDRESSES.permit2, request.amountAtomic] });
     const approval = await account.sendTransaction({ network: 'base', transaction: { to: ADDRESSES.usdc, data } });
     const approvalReceipt = await waitReceipt(client, approval.transactionHash);
     if (approvalReceipt.status !== 'success') throw new Error('Permit2 approval reverted');
     summary.approvalTx = approval.transactionHash;
   }
-  const swap = await account.swap({ network: 'base', toToken: ADDRESSES.weth, fromToken: ADDRESSES.usdc, fromAmount: request.amountAtomic, slippageBps: request.slippageBps, idempotencyKey: `hermes-base-usdc-weth-${Date.now()}` });
+  const swap = await account.swap({ network: 'base', toToken: request.toAddress, fromToken: request.fromAddress, fromAmount: request.amountAtomic, slippageBps: request.slippageBps, idempotencyKey: `hermes-base-${request.from.toLowerCase()}-${request.to.toLowerCase()}-${Date.now()}` });
   const client = deps.publicClient || publicClient();
   const receipt = await waitReceipt(client, swap.transactionHash);
   if (receipt.status !== 'success') throw new Error('Base swap reverted');

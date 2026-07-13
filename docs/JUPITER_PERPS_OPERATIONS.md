@@ -45,11 +45,11 @@ An API response, Privy hash, or a submitted-looking RPC value is never considere
 
 ## Monitoring while a position is open
 
-### First line: silent guardian
+### First line: hourly MiniMax M2.7 monitor
 
-Cron: **Jupiter Perps Position Guardian - Every 15 Minutes** (`71615489311a`)
+Cron: **Jupiter Perps Position Monitor - Hourly** (`e08ffb7be83e`)
 
-It is script-only and read-only. A healthy run produces no Telegram message. It emits an alert only if:
+It uses **MiniMax M2.7** plus a read-only position script. Every hour it emits a compact Telegram card while a position is open. It reports and escalates:
 
 - Jupiter's positions API cannot be read;
 - a position is missing a full 100% TP or stop-loss;
@@ -62,7 +62,7 @@ The guardian never opens, changes, or closes trades.
 
 | Job | Frequency | Responsibility |
 |---|---:|---|
-| Perps Guardian | 15 minutes | Silent protection/API/trigger alerting |
+| Perps Position Monitor | 1 hour | MiniMax M2.7 read-only position, TP/SL, trigger, liquidation, and macro report |
 | Sell and Exit Evaluator | Hourly | Live position and exit/thesis review |
 | Supervisor | 2 hours | GPT Luna execution authority; may change a policy-valid position after verification |
 | Price Monitor | 2 hours | Trend, volatility, support/resistance, BTC/ETH correlation |

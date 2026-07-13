@@ -9,6 +9,7 @@ below the configured 30% buffer.
 It deliberately NEVER opens, modifies, or closes a trade. Existing TP/SL
 orders remain the first-line on-chain protection.
 """
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -26,7 +27,7 @@ def usd(micros):
     return float(micros or 0) / 1_000_000
 
 
-def main():
+def main(report=False):
     try:
         positions = get_positions()
     except Exception as exc:
@@ -34,6 +35,7 @@ def main():
         return 2
 
     alerts = []
+    snapshots = []
     for p in positions:
         asset = p.get("asset", "UNKNOWN")
         side = str(p.get("side", "")).lower()
@@ -75,6 +77,22 @@ def main():
             alerts.append(f"{asset} {side}: liquidation buffer {liq_buffer:.1%} below 30% minimum")
 
         trigger_distance = min(abs(mark - tp_price), abs(mark - sl_price)) / mark
+        snapshots.append({
+            "asset": asset,
+            "side": side,
+            "position_pubkey": pubkey,
+            "size_usd": round(size, 4),
+            "entry_usd": round(entry, 6),
+            "mark_usd": round(mark, 6),
+            "pnl_usd": round(pnl, 6),
+            "liquidation_usd": round(liquidation, 6),
+            "liquidation_buffer_pct": round(liq_buffer * 100, 3),
+            "tp_usd": round(tp_price, 6),
+            "stop_usd": round(sl_price, 6),
+            "nearest_trigger_distance_pct": round(trigger_distance * 100, 3),
+            "full_tp": True,
+            "full_stop": True,
+        })
         if trigger_distance <= TRIGGER_ALERT_DISTANCE_PCT:
             alerts.append(
                 f"{asset} {side}: mark ${mark:.2f} is {trigger_distance:.2%} from TP ${tp_price:.2f} or stop ${sl_price:.2f}; "
@@ -85,9 +103,14 @@ def main():
         print("🚨 JUPITER PERPS GUARDIAN ALERT")
         print("\n".join(f"• {a}" for a in alerts))
         return 1
+    if report:
+        print(json.dumps({"status": "healthy", "open_positions": len(positions), "positions": snapshots}, indent=2))
     # Empty stdout means silent healthy run for no_agent cron jobs.
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description="Read-only Jupiter Perps guardian")
+    parser.add_argument("--report", action="store_true", help="emit healthy position state for an LLM monitor")
+    args = parser.parse_args()
+    raise SystemExit(main(report=args.report))

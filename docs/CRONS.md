@@ -27,7 +27,7 @@ Complete reference for all 27 scheduled jobs that power the Hermes Trading Agent
 | 24 | DuckBot Crypto Trading | every 2h | M3 | Solana trading scan |
 | 25 | DuckBot Profit Sweep | daily 6 PM ET | M3 | Solana sweep |
 | 26 | DuckBot Wallet Poller | every 30 min | M2.7 | Balance monitoring |
-| 27 | **Jupiter Perps Position Guardian** | every 15 min | script-only | Silent TP/SL, trigger, liquidation and API alerting |
+| 27 | **Jupiter Perps Position Monitor** | every 1h | M2.7 | Read-only TP/SL, trigger, liquidation, P/L, and macro monitoring |
 
 ## Model Hierarchy
 
@@ -63,7 +63,7 @@ Complete reference for all 27 scheduled jobs that power the Hermes Trading Agent
 - **Multi-Platform Readiness** — Every 2 hours Coinbase/Robinhood status
 - **Daily Multi-Platform Portfolio Report** — End-of-day summary
 - **DuckBot Wallet Poller** — Every 30 minutes balance check
-- **Jupiter Perps Position Guardian** — Every 15 minutes; silent healthy checks, Telegram alert on missing full TP/SL, near trigger, weak liquidation buffer, or Jupiter API failure. It is read-only and cannot trade.
+- **Jupiter Perps Position Monitor** — Every hour on MiniMax M2.7; reports live position, full TP/SL, trigger distance, liquidation buffer, P/L, and macro risk. It is read-only and cannot trade.
 
 ### 4. Execution Authority
 - **Autonomous Portfolio Execution Supervisor** — GPT Luna, every 2 hours

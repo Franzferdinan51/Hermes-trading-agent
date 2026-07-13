@@ -17,6 +17,20 @@ Coinbase Base balance verification uses `tools/cdp_base_balance.mjs` and the off
 
 The autonomous supervisor receives the latest outputs from market collection, wallet reconciliation, multi-platform readiness, research scans, portfolio risk, yield/staking diligence, news, sell/exit, and profit-sweep jobs. It may independently create and evaluate candidates rather than waiting for a pre-approved Ready card. Day trading and multiple simultaneous positions are permitted when aggregate risk, liquidity, correlation, fee efficiency, reserves, and exit capacity support them; there is no arbitrary position-count cap. Zero USDC is not an automatic blocker when a direct SOL-funded route preserves the native fee reserve.
 
+## Swap Base Currency Protocol
+
+Before executing any swap, the supervisor selects the optimal input asset:
+
+| Priority | Asset | Condition | Notes |
+|---|---|---|---|
+| 1 | **USDC** | Available balance ≥ notional | No price exposure, no extra swap needed |
+| 2 | **SOL** | SOL ≥ notional + 0.001 SOL gas AND direct route exists | 1 swap; preserves fee reserve ≥0.02 SOL |
+| 3 | **JupSOL** | SOL insufficient but JupSOL ≥ notional + 0.001 SOL gas AND direct route | Preserves ~5.7% APY on remainder; account for unstaking |
+| 4 | **SOL → USDC → TOKEN** | Only as last resort; double gas must be economically justified | Only if thesis allows SOL sell-down |
+| — | **HOLD** | No viable route OR reserve would be breached | Log exact blocker |
+
+Always preserve ≥0.02 SOL fee reserve. Never reduce JupSOL below the amount needed to keep SOL ≥0.02 SOL after unstaking. Log which base asset was chosen and why for every execution.
+
 ## Shared readiness cron
 
 Hermes job: `Multi-Platform Readiness and MoA Monitor`

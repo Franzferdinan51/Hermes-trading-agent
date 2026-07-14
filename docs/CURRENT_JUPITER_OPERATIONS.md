@@ -17,7 +17,14 @@ This document is the current operational source of truth. Older Cosmos/Osmosis a
 - Prohibited: withdrawals, treasury sweeps, arbitrary contracts, unknown programs, and unverified bridges. No Hyperliquid route is permitted.
 - Non-spot products such as Earn/Lend/Stake/LP/JLP/predictions/tokenized assets require feature-specific research and risk gates. Current held JL-USDC is monitored; the generic spot executor does not automate deposits or withdrawals.
 
+### Active Capital Deployment
+
+- The system must not hoard idle USDC or SOL merely because it is reserve. It preserves a minimum **0.02 SOL** transaction-fee reserve and **$10 USDC** operating reserve, then actively evaluates deployment of a bounded slice when live evidence supports positive net edge, sufficient liquidity, defined invalidation, and a verified exit path.
+- A qualifying initial spot position may use up to **10% of verified NAV**. A confirmed macro-Perps starter may use **3-5% of NAV**; it retains the separately required full TP/SL, ≤3x leverage, ≥30% liquidation buffer, and retest-only add rule.
+- A HOLD remains valid when there is no verified edge. Idle capital alone is never a reason to reject a qualified, policy-valid opportunity.
+
 ### Target and Profit-Pull Governance
+
 
 - **Daily Portfolio Targets and Risk Manager** recalibrates each target/invalidation against live price, volatility, liquidity, concentration, fees, expected dollar profit, and the partial-slice economics.
 - **Hourly Sell & Exit Evaluator** performs an immediate re-evaluation after a material price/volatility move, macro surprise, news/tokenomics/security event, liquidity/route deterioration, depeg/validator issue, or concentration change.

@@ -130,6 +130,24 @@
       "enabled_for_execution": false,
       "reason_disabled": "MCP endpoint is configured but requires Robinhood desktop authentication and dedicated Agentic account onboarding."
     },
+    "robinhood_chain": {
+      "status": "dormant_readiness_disabled",
+      "venue": "robinhood",
+      "product": "robinhood_chain_layer2",
+      "chain_id": null,
+      "rpc_url": null,
+      "explorer_url": null,
+      "wallet": null,
+      "wallet_adapter": "pending_robinhood_chain_wallet",
+      "signer": "robinhood_chain_local_or_agentic_wallet_pending",
+      "executor": "pending_robinhood_chain_adapter",
+      "mode": "readiness_only_unfunded",
+      "enabled_for_execution": false,
+      "funding_allowed": false,
+      "supported_assets": [],
+      "activation_gates": ["official chain ID/RPC/explorer verified", "official wallet/custody model verified", "supported asset/deposit matrix verified", "dedicated signer and transaction adapter built", "simulation and instruction validation passed", "small funded test and independent finality/balance reconciliation passed"],
+      "reason_disabled": "Robinhood announced a Layer-2 blockchain, but official production RPC, chain ID, wallet, asset, and developer execution surfaces are not yet independently verified. Keep dormant and separate from Robinhood Agentic/MCP until readiness gates pass."
+    },
     "tronlink_tron": {
       "status": "planned_disabled",
       "chain": "tron",

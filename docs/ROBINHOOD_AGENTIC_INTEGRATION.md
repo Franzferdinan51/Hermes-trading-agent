@@ -42,6 +42,12 @@ It currently reports disabled/unauthenticated until the official desktop authent
 - Never send Robinhood credentials, OTPs, or account details through Agent Mesh.
 - Do not treat Robinhood MCP as interchangeable with Coinbase CDP or Jupiter.
 
+## Robinhood Chain readiness (dormant)
+
+Robinhood has announced a Layer-2 blockchain, but this integration is deliberately **separate from Robinhood Agentic/MCP** and remains execution-disabled. Hermes records a dormant readiness module for the future chain, but does not assume a chain ID, RPC, explorer, wallet, custody model, bridge/deposit path, supported asset list, or permissionless transaction surface until each is verified from official developer documentation.
+
+Activation requires official chain/RPC verification; wallet and custody-model verification; exact asset/deposit matrix; a dedicated wallet/signer boundary; transaction construction and instruction validation; simulation; a small funded test; finalized receipt; and independent balance reconciliation. Funding the future module is not authorization to activate it or reuse Robinhood Agentic, Coinbase, Privy, or another venue’s signer.
+
 ## Important Robinhood disclosure
 
 Robinhood states that AI-driven trades may execute without direct input on each transaction if configured that way, and the user remains responsible for trades and losses. Agentic trading can result in loss of the entire investment. Keep this integration disabled until its review and approval workflow is tested.

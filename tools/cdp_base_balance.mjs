@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 /** Read-only Coinbase CDP Base wallet balance probe. */
 import fs from 'node:fs';
-import { CdpClient } from '@coinbase/cdp-sdk';
+import { createRequire } from 'node:module';
+
+// Keep the CDP SDK outside the Desktop project tree. macOS has intermittently
+// returned errno -11 while Node reads the project node_modules source files.
+const require = createRequire(import.meta.url);
+const { CdpClient } = require('<LOCAL_USER_HOME>/.hermes/cdp-runtime/node_modules/@coinbase/cdp-sdk/_cjs/index.js');
 
 const WALLET = '<BASE_WALLET_ADDRESS>';
-const keyPath = process.env.CDP_API_KEY_FILE || `${process.env.HOME}/Documents/cdp_api_key (1).json`;
+const keyPath = process.env.CDP_API_KEY_FILE || `${process.env.HOME}/Desktop/cdp_api_key.json`;
 const walletPath = process.env.CDP_WALLET_SECRET_FILE || `${process.env.HOME}/Documents/<PROTECTED_WALLET_SECRET_FILE>`;
 
 const key = JSON.parse(fs.readFileSync(keyPath, 'utf8'));

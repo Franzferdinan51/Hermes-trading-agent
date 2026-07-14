@@ -44,7 +44,9 @@ It currently reports disabled/unauthenticated until the official desktop authent
 
 ## Robinhood Chain readiness (dormant)
 
-Robinhood has announced a Layer-2 blockchain, but this integration is deliberately **separate from Robinhood Agentic/MCP** and remains execution-disabled. Hermes records a dormant readiness module for the future chain, but does not assume a chain ID, RPC, explorer, wallet, custody model, bridge/deposit path, supported asset list, or permissionless transaction surface until each is verified from official developer documentation.
+Robinhood Chain is a public, permissionless, EVM-compatible Arbitrum Layer-2. Official mainnet details are **chain ID `4663`**, RPC `https://rpc.mainnet.chain.robinhood.com`, native gas asset **ETH**, and explorer `https://robinhoodchain.blockscout.com`. It is a separate on-chain surface from Robinhood Agentic/MCP: an EVM wallet/dapp can connect to the Chain, while Agentic remains the Robinhood trading-account integration.
+
+Hermes records these verified network details but keeps the Chain execution module **disabled and unfunded**. Permissionless does not mean risk-free or automatically ready for this portfolio: supported assets, wallet ownership, canonical bridge/deposit route, contract allowlist, transaction adapter, simulation, and settlement verification still must pass before activation. The official docs describe the canonical Arbitrum bridge and partner routes; no bridge is selected or enabled by this change.
 
 Activation requires official chain/RPC verification; wallet and custody-model verification; exact asset/deposit matrix; a dedicated wallet/signer boundary; transaction construction and instruction validation; simulation; a small funded test; finalized receipt; and independent balance reconciliation. Funding the future module is not authorization to activate it or reuse Robinhood Agentic, Coinbase, Privy, or another venue’s signer.
 

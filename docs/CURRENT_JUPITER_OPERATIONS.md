@@ -16,6 +16,13 @@ This document is the current operational source of truth. Older Cosmos/Osmosis a
 - Jupiter Perps is active for SOL, WBTC, and ETH. New or changed Perps positions require policy-valid leverage/exposure, full 100% TP and stop-loss, Privy owner signature, Jupiter co-sign/broadcast, finalized Solana verification, and positions-API verification.
 - Prohibited: withdrawals, treasury sweeps, arbitrary contracts, unknown programs, and unverified bridges. No Hyperliquid route is permitted.
 - Non-spot products such as Earn/Lend/Stake/LP/JLP/predictions/tokenized assets require feature-specific research and risk gates. Current held JL-USDC is monitored; the generic spot executor does not automate deposits or withdrawals.
+
+### Target and Profit-Pull Governance
+
+- **Daily Portfolio Targets and Risk Manager** recalibrates each target/invalidation against live price, volatility, liquidity, concentration, fees, expected dollar profit, and the partial-slice economics.
+- **Hourly Sell & Exit Evaluator** performs an immediate re-evaluation after a material price/volatility move, macro surprise, news/tokenomics/security event, liquidity/route deterioration, depeg/validator issue, or concentration change.
+- A target may be retained, revised, or classified as **rebalance-only**. Targets whose expected partial-sale profit is below `$1` after costs must be flagged `TARGET_TOO_SMALL_FOR_PROFIT_PULL` rather than treated as an owner-profit trigger.
+- Owner profit transfers, once a dedicated outbound transfer executor is independently verified, are **native SOL on Solana only** to the verified owner destination. Eligibility uses realized reconciled net profit (minimum `$5`), never principal, fee reserve, bridges, Base/Ethereum assets, or another chain.
 - Mandatory pre-buy research applies to every coin, token, and tokenized asset before any buy consideration: exact identity, legitimacy, liquidity, costs, exit path, jurisdiction/compliance, and expected net edge must be verified first.
 - Small speculative coins are allowed in a separate speculation bucket. Default limits are 2% of verified NAV per speculative position and 5% aggregate speculative exposure, further constrained by the 3% NAV maximum-total-risk rule.
 ## 2. Exact asset identity

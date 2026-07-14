@@ -54,6 +54,14 @@ def _active_cap_usd() -> float:
 def _max_notional_pct() -> float:
     return _state_override("max_notional_per_trade_pct", MAX_NOTIONAL_PCT)
 
+
+def _max_risk_pct() -> float:
+    return _state_override("max_risk_per_trade_pct", MAX_RISK_PCT)
+
+
+def _max_daily_loss_pct() -> float:
+    return _state_override("max_daily_loss_pct", MAX_DAILY_LOSS_PCT)
+
 class PolicyError(RuntimeError): pass
 
 @contextmanager
@@ -97,9 +105,9 @@ def preflight(*, wallet_value_usd, notional_usd, max_loss_usd, quote_age_s,
     if notional_usd > _active_cap_usd(): raise PolicyError("notional exceeds active cap")
     if notional_usd > max(wallet_value_usd * _max_notional_pct(), 1.0):
         raise PolicyError("notional exceeds per-trade wallet limit")
-    if max_loss_usd > wallet_value_usd * MAX_RISK_PCT:
-        raise PolicyError("risk exceeds 1% wallet limit")
-    if daily_loss_usd > wallet_value_usd * MAX_DAILY_LOSS_PCT:
+    if max_loss_usd > wallet_value_usd * _max_risk_pct():
+        raise PolicyError("risk exceeds configured wallet limit")
+    if daily_loss_usd > wallet_value_usd * _max_daily_loss_pct():
         raise PolicyError("daily loss limit exceeded")
     if quote_age_s > MAX_QUOTE_AGE_SECONDS: raise PolicyError("quote is stale")
     if price_impact_pct > MAX_PRICE_IMPACT_PCT: raise PolicyError("price impact too high")

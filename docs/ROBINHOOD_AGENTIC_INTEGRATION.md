@@ -48,7 +48,9 @@ Robinhood Chain is a public, permissionless, EVM-compatible Arbitrum Layer-2. Of
 
 Hermes records these verified network details but keeps the Chain execution module **disabled and unfunded**. Permissionless does not mean risk-free or automatically ready for this portfolio: supported assets, wallet ownership, canonical bridge/deposit route, contract allowlist, transaction adapter, simulation, and settlement verification still must pass before activation. The official docs describe the canonical Arbitrum bridge and partner routes; no bridge is selected or enabled by this change.
 
-Activation requires official chain/RPC verification; wallet and custody-model verification; exact asset/deposit matrix; a dedicated wallet/signer boundary; transaction construction and instruction validation; simulation; a small funded test; finalized receipt; and independent balance reconciliation. Funding the future module is not authorization to activate it or reuse Robinhood Agentic, Coinbase, Privy, or another venue’s signer.
+A dedicated unfunded EVM account has been created for future Robinhood Chain use: `<ROBINHOOD_CHAIN_WALLET_ADDRESS>`. Its live mainnet ETH balance was independently verified at zero. This account is separate from Robinhood Agentic, Coinbase Base operations, and Privy/Jupiter; no funds or transactions have been sent.
+
+Activation still requires exact asset/deposit matrix; dedicated signer boundary; transaction construction and instruction validation; simulation; a small funded test; finalized receipt; and independent balance reconciliation. Funding the future module is not authorization to activate it or reuse Robinhood Agentic, Coinbase, Privy, or another venue’s signer.
 
 ## Important Robinhood disclosure
 

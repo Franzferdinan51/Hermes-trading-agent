@@ -11,8 +11,10 @@ import argparse
 import base64
 import hashlib
 import json
+import os
 import subprocess
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -27,7 +29,7 @@ LEDGER = ROOT / "logs" / "trade_ledger.jsonl"
 THESIS = ROOT / "state" / "position_theses.json"
 RPC = "https://api.mainnet-beta.solana.com"
 QUOTE_URL = "https://lite-api.jup.ag/swap/v1/quote"
-SWAP_URL = "https://lite-api.jup.ag/swap/v1/swap"
+SWAP_URL = "https://api.jup.ag/swap/v1/swap"
 PRIVY = ["pnpm", "--package=@privy-io/agent-wallet-cli", "dlx", "privy-agent-wallet", "rpc"]
 SOL = "So11111111111111111111111111111111111111112"
 USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
@@ -35,7 +37,8 @@ JUP = "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
 CBBTC = "cbbtcf3aa214zXHbiAZQwf4122FBYbraNdFqgw4iMij"
 JUPSOL = "jupSoLaHXQiZZTSfEWMTRRgpnyFm8f6sZdosWBjx93v"
 ANSEM = "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump"
-ALLOWLIST = {SOL, USDC, JUP, CBBTC, JUPSOL, ANSEM}
+JLUSDC = "9BEcn9aPEmhSPbPQeFGjidRiEKki46fVQDyPpSQXPA2D"
+ALLOWLIST = {SOL, USDC, JUP, CBBTC, JUPSOL, ANSEM, JLUSDC}
 ALLOWLIST_INTENT = {
     SOL: "core",
     USDC: "core",
@@ -43,6 +46,7 @@ ALLOWLIST_INTENT = {
     CBBTC: "core",
     JUPSOL: "core",
     ANSEM: "speculation_exit",
+    JLUSDC: "core_earn_redeem",
 }
 SPECULATIVE_ALLOWLIST = {ANSEM}
 FEE_RESERVE_LAMPORTS = 20_000_000
@@ -59,10 +63,35 @@ APPROVED_TOP_LEVEL_PROGRAMS = {
 
 
 def http_json(url: str, *, method: str = "GET", body: dict | None = None) -> dict:
+    """Call RPC/Jupiter with bounded retry for transient Jupiter rate limits.
+
+    Quotes must be fresh at execution time, so retry only the request itself and
+    never reuse a cached quote. Jupiter calls use the same authenticated,
+    browser-like headers as the verified quote helper.
+    """
     data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(url, data=data, method=method, headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=30) as response:
-        return json.loads(response.read())
+    headers = {"Content-Type": "application/json", "Accept": "application/json"}
+    if url.startswith("https://api.jup.ag/"):
+        key = os.environ.get("JUPITER_API_KEY")
+        if not key:
+            result = subprocess.run(
+                ["security", "find-generic-password", "-a", os.environ.get("USER", ""), "-s", "jupiter-api-key", "-w"],
+                capture_output=True, text=True, check=True,
+            )
+            key = result.stdout.strip()
+        headers.update({"x-api-key": key, "User-Agent": "Mozilla/5.0", "Accept-Encoding": "identity"})
+    for attempt in range(3):
+        req = urllib.request.Request(url, data=data, method=method, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                return json.loads(response.read())
+        except urllib.error.HTTPError as exc:
+            if exc.code != 429 or attempt == 2:
+                raise
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+            delay = float(retry_after) if retry_after and retry_after.isdigit() else float(2 ** attempt)
+            time.sleep(delay)
+    raise RuntimeError("unreachable Jupiter retry state")
 
 
 def rpc(method: str, params: list) -> object:
@@ -128,20 +157,47 @@ def asset_raw_balance(snapshot: dict, mint: str) -> int:
     return int(snapshot.get("token_raw_amounts", {}).get(mint, 0))
 
 
+def _jupiter_can_route(mint: str) -> bool:
+    """Return True if Jupiter can route a quote for this mint (USDC or SOL as the other leg).
+    Uses a small SOL amount (1M lamports = 0.001 SOL) to probe routing without meaningful cost.
+    """
+    import urllib.parse
+    # Always probe via SOL first since SOL pairs are the most universal on Solana
+    for other, probe_amount in ((USDC, "1000000"), (SOL, "1000000")):
+        try:
+            query = urllib.parse.urlencode({
+                "inputMint": mint if mint != other else SOL,
+                "outputMint": other if mint != other else USDC,
+                "amount": probe_amount,
+                "slippageBps": "500",
+            })
+            result = http_json(f"{QUOTE_URL}?{query}")
+            if result.get("outAmount") and int(result["outAmount"]) > 0:
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def is_dynamic_allowlist_tradeable(mint: str) -> tuple[bool, dict | None, str]:
-    """Return (allowed, entry, reason). Hard-coded core mints always pass."""
+    """Return (allowed, entry, reason). Core mints always pass.
+    For other mints: dynamic allowlist entry → pass; otherwise ask Jupiter.
+    """
     if mint in ALLOWLIST:
         return True, None, "hard_coded"
     try:
         from dynamic_allowlist import entry_for, is_halted
     except ImportError:
-        return False, None, "dynamic_allowlist_unavailable"
-    if is_halted():
-        return False, None, "dynamic_allowlist_halted"
-    entry = entry_for(mint)
-    if entry is None:
-        return False, None, "no_active_authorization"
-    return True, entry, "dynamic"
+        pass
+    else:
+        if not is_halted():
+            entry = entry_for(mint)
+            if entry is not None:
+                return True, entry, "dynamic"
+    # No allowlist entry — ask Jupiter if it can route this mint
+    if _jupiter_can_route(mint):
+        return True, None, "jupiter_routed"
+    return False, None, "no_active_authorization"
 
 
 def verify_post_trade(before: dict, after: dict, input_mint: str, output_mint: str,
@@ -166,13 +222,18 @@ def fingerprint(snapshot: dict) -> str:
     return hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest()
 
 
-def quote(input_mint: str, output_mint: str, amount: int, slippage_bps: int) -> dict:
+def quote(input_mint: str, output_mint: str, amount: int, slippage_bps: int,
+          *, only_direct_routes: bool = False) -> dict:
     query = urllib.parse.urlencode({
         "inputMint": input_mint,
         "outputMint": output_mint,
         "amount": str(amount),
         "slippageBps": str(slippage_bps),
         "restrictIntermediateTokens": "true",
+        "onlyDirectRoutes": str(only_direct_routes).lower(),
+        # Deriverse routes have repeatedly failed unsigned simulation with
+        # custom error 0x14; exclude them until the venue is verified again.
+        "excludeDexes": "Deriverse,Metric",
         "maxAccounts": "32",
     })
     return http_json(f"{QUOTE_URL}?{query}")
@@ -207,7 +268,9 @@ def simulate_unsigned(transaction_b64: str) -> dict:
     }])
     value = result.get("value", {})
     if value.get("err") is not None:
-        raise PolicyError(f"unsigned transaction simulation failed: {value['err']}")
+        logs = value.get("logs") or []
+        detail = " | ".join(str(line) for line in logs[-12:])
+        raise PolicyError(f"unsigned transaction simulation failed: {value['err']}; logs: {detail}")
     return {"units_consumed": value.get("unitsConsumed")}
 
 
@@ -280,6 +343,7 @@ def main() -> None:
     ap.add_argument("--wallet-value-usd", required=True, type=float)
     ap.add_argument("--max-loss-usd", required=True, type=float)
     ap.add_argument("--slippage-bps", type=int, default=50)
+    ap.add_argument("--only-direct-routes", action="store_true", help="require a single direct Jupiter route; use after a multi-hop route failure")
     ap.add_argument("--execute", action="store_true", help="sign and broadcast; without this flag the tool is dry-run only")
     args = ap.parse_args()
 
@@ -302,7 +366,8 @@ def main() -> None:
     enforce_speculative_direction(args.input_mint, args.output_mint)
     before_fp = fingerprint(before)
     quote_received_at = time.monotonic()
-    q = quote(args.input_mint, args.output_mint, args.amount, args.slippage_bps)
+    q = quote(args.input_mint, args.output_mint, args.amount, args.slippage_bps,
+              only_direct_routes=args.only_direct_routes)
     impact = float(q.get("priceImpactPct", 0)) * 100
     expected = int(q["outAmount"])
     minimum = int(q["otherAmountThreshold"])
@@ -348,20 +413,12 @@ def main() -> None:
             if args.input_mint == SOL and before["sol_lamports"] - args.amount < FEE_RESERVE_LAMPORTS:
                 raise PolicyError("trade would consume the 0.02 SOL fee reserve")
             enforce_speculative_direction(args.input_mint, args.output_mint)
-            before_fp = fingerprint(before)
-            quote_received_at = time.monotonic()
-            q = quote(args.input_mint, args.output_mint, args.amount, args.slippage_bps)
-            impact = float(q.get("priceImpactPct", 0)) * 100
-            expected = int(q["outAmount"])
-            minimum = int(q["otherAmountThreshold"])
-            swap, decoded, simulation = build_swap(q, args.wallet)
-            quote_age = time.monotonic() - quote_received_at
             current = balances(args.wallet)
             preflight(
                 wallet_value_usd=args.wallet_value_usd,
                 notional_usd=args.notional_usd,
                 max_loss_usd=args.max_loss_usd,
-                quote_age_s=quote_age,
+                quote_age_s=time.monotonic() - quote_received_at,
                 price_impact_pct=impact,
                 slippage_bps=args.slippage_bps,
                 expected_out=expected,

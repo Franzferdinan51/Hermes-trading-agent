@@ -10,7 +10,7 @@ const { CdpClient } = require(process.env.CDP_SDK_RUNTIME || '@coinbase/cdp-sdk'
 
 const WALLET = '<BASE_WALLET_ADDRESS>';
 const keyPath = process.env.CDP_API_KEY_FILE || `${process.env.HOME}/Desktop/cdp_api_key.json`;
-const walletPath = process.env.CDP_WALLET_SECRET_FILE || `${process.env.HOME}/Documents/<PROTECTED_WALLET_SECRET_FILE>`;
+const walletPath = process.env.CDP_WALLET_SECRET_FILE || '';
 
 const key = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
 const cdp = new CdpClient({

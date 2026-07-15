@@ -53,7 +53,7 @@ export function validateRequest(args) {
 
 function loadSecrets() {
   const keyPath = process.env.CDP_API_KEY_FILE || `${process.env.HOME}/Documents/cdp_api_key (1).json`;
-  const walletPath = process.env.CDP_WALLET_SECRET_FILE || `${process.env.HOME}/Documents/<PROTECTED_WALLET_SECRET_FILE>`;
+  const walletPath = process.env.CDP_WALLET_SECRET_FILE || '';
   const key = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
   return { apiKeyId: key.id, apiKeySecret: key.privateKey, walletSecret: fs.readFileSync(walletPath, 'utf8').trim() };
 }

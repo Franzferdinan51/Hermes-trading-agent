@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 // Keep the CDP SDK outside the Desktop project tree. macOS has intermittently
 // returned errno -11 while Node reads the project node_modules source files.
 const require = createRequire(import.meta.url);
-const { CdpClient } = require('<LOCAL_USER_HOME>/.hermes/cdp-runtime/node_modules/@coinbase/cdp-sdk/_cjs/index.js');
+const { CdpClient } = require(process.env.CDP_SDK_RUNTIME || '@coinbase/cdp-sdk');
 
 const WALLET = '<BASE_WALLET_ADDRESS>';
 const keyPath = process.env.CDP_API_KEY_FILE || `${process.env.HOME}/Desktop/cdp_api_key.json`;

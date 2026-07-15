@@ -64,7 +64,7 @@ Do not put secret values in this document, source files, cron prompts, chat, log
 From the project directory, invoke through the `terminal` tool:
 
 ```bash
-cd <LOCAL_USER_HOME>/Desktop/crypto-trading-setup
+cd <TRADING_WORKSPACE_PATH>
 python3 tools/base_agent_readiness.py
 ```
 

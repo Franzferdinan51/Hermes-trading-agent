@@ -16,7 +16,7 @@ BASE_CHAIN_ID = 8453
 BASE_RPC_URL = os.getenv("BASE_RPC_URL", "https://mainnet.base.org")
 CDP_API_KEY_FILE = Path(os.getenv(
     "CDP_API_KEY_FILE",
-    "<LOCAL_USER_HOME>/Documents/cdp_api_key (1).json",
+    "<PROTECTED_CREDENTIAL_PATH>/cdp_api_key (1).json",
 ))
 
 

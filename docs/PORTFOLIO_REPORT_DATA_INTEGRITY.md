@@ -32,7 +32,7 @@ Do not add Perps notional: it double-counts borrowed exposure. If the displayed 
 
 ## Verification
 
-Invoke through the `terminal` tool from `<LOCAL_USER_HOME>/Desktop/Hermes-trading-agent`:
+Invoke through the `terminal` tool from `<HERMES_REPO_PATH>`:
 
 ```bash
 python3 tools/wallet_poller.py

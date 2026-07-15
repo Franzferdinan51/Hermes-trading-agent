@@ -1,3 +1,12 @@
 node_modules/
 .env
 *.log
+
+# Local/private runtime artifacts
+evidence/
+logs/
+state/evidence/
+state/cron_handoff*.jsonl
+state/cron_handoff*.md
+*.DS_Store
+.env

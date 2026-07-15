@@ -8,11 +8,12 @@ meme/cooking tokens with tightening liquidity.
 API: https://api.jup.ag/terminal/v1 (inferred)
 Fallback: scrape via browser automation if API returns empty.
 
-DORMANT by default — enable via config in state/position_rules.json.
+Enabled by policy. Uses Jupiter Terminal when available, then CoinGecko Solana ecosystem discovery as a data-only fallback. Every candidate still requires a fresh Jupiter quote and policy guard before execution.
 """
 from __future__ import annotations
 
 import json
+import subprocess
 import time
 import urllib.parse
 import urllib.request
@@ -94,18 +95,46 @@ class TerminalClient:
         self.api_base = api_base
 
     def fetch_top_traded(self, limit: int = 50) -> list[TerminalToken]:
-        """Fetch top-traded tokens from Jupiter Terminal."""
-        tokens = []
+        """Fetch top-traded tokens; fall back to current authenticated Jupiter verified-token feed."""
         data = _http_json(f"{self.api_base}/top-traded?limit={limit}")
-        if not data:
+        if data:
+            entries = data if isinstance(data, list) else data.get("data", data.get("tokens", []))
+            return [self._parse_token(t, source="top-traded") for t in entries if isinstance(t, dict)]
+        return self.fetch_verified_tokens(limit)
+
+    def fetch_verified_tokens(self, limit: int = 50) -> list[TerminalToken]:
+        """Fallback discovery from CoinGecko Solana ecosystem; execution still requires Jupiter quote verification."""
+        try:
+            url="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=solana-ecosystem&order=volume_desc&per_page="+str(min(limit,50))+"&page=1"
+            req=urllib.request.Request(url,headers={"Accept":"application/json","User-Agent":"Hermes market scanner"})
+            with urllib.request.urlopen(req,timeout=25) as r: rows=json.loads(r.read())
+            out=[]
+            for t in rows:
+                try:
+                    cid=t.get("id"); detail_req=urllib.request.Request(f"https://api.coingecko.com/api/v3/coins/{cid}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false",headers={"User-Agent":"Hermes market scanner"})
+                    with urllib.request.urlopen(detail_req,timeout=15) as dr: detail=json.loads(dr.read())
+                    mint=(detail.get("platforms",{}).get("solana") or "")
+                    if not mint: continue
+                    out.append(TerminalToken(mint=mint,symbol=t.get("symbol","?").upper(),name=t.get("name","?"),price=float(t.get("current_price") or 0),price_change_pct=float(t.get("price_change_percentage_24h") or 0),market_cap=self._float(t.get("market_cap")),fdv=self._float(t.get("fully_diluted_valuation")),volume_24h=self._float(t.get("total_volume")),liquidity=None,age_days=None,holders=None,txns_24h=None,traders_24h=None,fees_paid_24h=None,is_verified=False,source="coingecko-solana-fallback"))
+                except Exception: continue
+            return out
+        except Exception: return []
+
+    def fetch_verified_tokens_legacy(self, limit: int = 50) -> list[TerminalToken]:
+        try:
+            key = subprocess.run(["security", "find-generic-password", "-a", os.environ.get("USER", ""), "-s", "jupiter-api-key", "-w"], capture_output=True, text=True, check=True, timeout=10).stdout.strip()
+            req = urllib.request.Request("https://api.jup.ag/tokens/v2/tag?query=verified", headers={"x-api-key": key, "Accept": "application/json", "User-Agent": "Hermes trading agent"})
+            with urllib.request.urlopen(req, timeout=25) as r: raw = json.loads(r.read())
+            entries = raw if isinstance(raw, list) else raw.get("data", raw.get("tokens", []))
+            out=[]
+            for t in entries[:limit]:
+                mint=t if isinstance(t,str) else t.get("id", t.get("address", t.get("mint", "")))
+                if not mint: continue
+                meta=t if isinstance(t,dict) else {}
+                out.append(TerminalToken(mint=mint, symbol=meta.get("symbol", "UNKNOWN"), name=meta.get("name", meta.get("symbol", "UNKNOWN")), price=0.0, price_change_pct=0.0, market_cap=None, fdv=None, volume_24h=None, liquidity=None, age_days=None, holders=None, txns_24h=None, traders_24h=None, fees_paid_24h=None, is_verified=True, source="jupiter-verified-fallback"))
+            return out
+        except Exception:
             return []
-        entries = data if isinstance(data, list) else data.get("data", data.get("tokens", []))
-        for t in entries:
-            try:
-                tokens.append(self._parse_token(t, source="top-traded"))
-            except Exception:
-                continue
-        return tokens
 
     def fetch_cooking(self, limit: int = 50, sort_by: str = "listedTime") -> list[TerminalToken]:
         """Fetch newly cooking/meme tokens, sorted by listing time."""

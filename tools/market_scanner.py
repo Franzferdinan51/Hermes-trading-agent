@@ -8,7 +8,7 @@ meme/cooking tokens with tightening liquidity.
 API: https://api.jup.ag/terminal/v1 (inferred)
 Fallback: scrape via browser automation if API returns empty.
 
-Enabled by policy. Uses Jupiter Terminal when available, then CoinGecko Solana ecosystem discovery as a data-only fallback. Every candidate still requires a fresh Jupiter quote and policy guard before execution.
+DORMANT by default — enable via config in state/position_rules.json.
 """
 from __future__ import annotations
 
@@ -103,20 +103,18 @@ class TerminalClient:
         return self.fetch_verified_tokens(limit)
 
     def fetch_verified_tokens(self, limit: int = 50) -> list[TerminalToken]:
-        """Fallback discovery from CoinGecko Solana ecosystem; execution still requires Jupiter quote verification."""
+        """Public Solana pool discovery fallback; every candidate still requires Jupiter quote verification."""
         try:
-            url="https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&category=solana-ecosystem&order=volume_desc&per_page="+str(min(limit,50))+"&page=1"
+            url="https://api.geckoterminal.com/api/v2/networks/solana/trending_pools"
             req=urllib.request.Request(url,headers={"Accept":"application/json","User-Agent":"Hermes market scanner"})
-            with urllib.request.urlopen(req,timeout=25) as r: rows=json.loads(r.read())
+            with urllib.request.urlopen(req,timeout=30) as r: raw=json.loads(r.read())
             out=[]
-            for t in rows:
-                try:
-                    cid=t.get("id"); detail_req=urllib.request.Request(f"https://api.coingecko.com/api/v3/coins/{cid}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false",headers={"User-Agent":"Hermes market scanner"})
-                    with urllib.request.urlopen(detail_req,timeout=15) as dr: detail=json.loads(dr.read())
-                    mint=(detail.get("platforms",{}).get("solana") or "")
-                    if not mint: continue
-                    out.append(TerminalToken(mint=mint,symbol=t.get("symbol","?").upper(),name=t.get("name","?"),price=float(t.get("current_price") or 0),price_change_pct=float(t.get("price_change_percentage_24h") or 0),market_cap=self._float(t.get("market_cap")),fdv=self._float(t.get("fully_diluted_valuation")),volume_24h=self._float(t.get("total_volume")),liquidity=None,age_days=None,holders=None,txns_24h=None,traders_24h=None,fees_paid_24h=None,is_verified=False,source="coingecko-solana-fallback"))
-                except Exception: continue
+            for pool in raw.get("data",[])[:min(limit,20)]:
+                a=pool.get("attributes",{}); rel=pool.get("relationships",{})
+                mint=(rel.get("base_token",{}).get("data",{}) or {}).get("id","")
+                if mint.startswith("solana_"): mint=mint.split("_",1)[1]
+                if not mint: continue
+                out.append(TerminalToken(mint=mint,symbol=a.get("name","UNKNOWN").split(" / ")[0],name=a.get("name","UNKNOWN"),price=float(a.get("base_token_price_usd") or 0),price_change_pct=float((a.get("price_change_percentage") or {}).get("h24") or 0),market_cap=None,fdv=self._float(a.get("fdv_usd")),volume_24h=self._float((a.get("volume_usd") or {}).get("h24")),liquidity=self._float(a.get("reserve_in_usd")),age_days=None,holders=None,txns_24h=None,traders_24h=None,fees_paid_24h=None,is_verified=False,source="geckoterminal-solana-trending"))
             return out
         except Exception: return []
 
